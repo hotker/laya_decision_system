@@ -2,15 +2,15 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# 依赖
+# Dependencies
 COPY pyproject.toml requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 代码
+# Code
 COPY . .
 
-# 输出目录
+# Output directory
 RUN mkdir -p output
 
-# 默认命令
+# Default command
 CMD ["python", "src/main.py"]

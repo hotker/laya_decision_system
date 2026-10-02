@@ -1,59 +1,59 @@
-# 🧠 Laya AI 决策系统 v2.0
+# 🧠 Laya AI Decision System v2.0
 
-> 基于 Laya AI 决策引擎的通用智能决策平台
+> A Universal Intelligent Decision Platform Based on Laya AI Decision Engine
 
-## 📋 系统概述
+## 📋 Overview
 
-本系统是一套基于 **Laya AI** 决策引擎的通用智能决策平台，支持多种决策场景：
+This system is a universal intelligent decision platform based on the **Laya AI** decision engine, supporting multiple decision scenarios:
 
-- ✅ **智能分类**：文本/评论/内容自动分类
-- ✅ **情感分析**：正面/负面/中性情感识别
-- ✅ **意图识别**：用户意图自动识别
-- ✅ **风险评估**：风险等级自动评分
-- ✅ **推荐决策**：个性化推荐与策略制定
-- ✅ **批量处理**：高效批量决策分析
+- ✅ **Intelligent Classification**: Automatic classification of text/comments/content
+- ✅ **Sentiment Analysis**: Positive/negative/neutral sentiment recognition
+- ✅ **Intent Recognition**: Automatic user intent identification
+- ✅ **Risk Assessment**: Automatic risk level scoring
+- ✅ **Recommendation Decision**: Personalized recommendations and strategy formulation
+- ✅ **Batch Processing**: Efficient batch decision analysis
 
-### 技术栈
+### Tech Stack
 
-| 组件 | 说明 |
+| Component | Description |
 |------|------|
-| **Python 3.10+** | 使用现代类型注解 |
-| **Laya AI** | 智能决策引擎（多语言支持） |
-| **requests** | 同步 HTTP，自动重试 + 指数退避 |
-| **httpx** | 异步 HTTP，高并发批量处理（可选） |
-| **pydantic** | 数据校验 + 环境变量配置 |
-| **structlog** | 结构化 JSON 日志 |
+| **Python 3.10+** | Modern type annotations |
+| **Laya AI** | AI decision engine (multi-language support) |
+| **requests** | Synchronous HTTP with auto-retry + exponential backoff |
+| **httpx** | Asynchronous HTTP for high-concurrency batch processing (optional) |
+| **pydantic** | Data validation + environment variable configuration |
+| **structlog** | Structured JSON logging |
 
 ---
 
-## 🆕 v2.0 更新
+## 🆕 v2.0 Updates
 
-| # | 改进 | 说明 |
+| # | Improvement | Description |
 |---|------|------|
-| 1 | HTTP 重试 | `requests` + `Retry` 自动重试 429/5xx |
-| 2 | 异步客户端 | `httpx` 高并发 `async_batch_concurrent()` |
-| 3 | 结构化日志 | `structlog` JSON 输出 + trace_id |
-| 4 | 输入校验 | `pydantic` 校验请求参数 |
-| 5 | 环境变量配置 | `LAYA_BASE_URL` 等覆盖，`.env` 支持 |
-| 6 | 外部数据源 | `--data file.json/.csv/-` |
-| 7 | 统一输出 | `{"metadata": {...}, "results": [...]}` |
-| 8 | 进度条 | 实时 `分类 |████| 30% 1.2/s ETA 5.0s` |
-| 9 | 风险评估 | 新增场景 |
-| 10 | 插件化 | 场景自动注册，新场景无需改 main.py |
-| 11 | CSV 输出 | `--format csv` |
-| 12 | 完整测试 | pytest + 覆盖率 |
+| 1 | HTTP Retry | `requests` + `Retry` auto-retry for 429/5xx |
+| 2 | Async Client | `httpx` high-concurrency `async_batch_concurrent()` |
+| 3 | Structured Logging | `structlog` JSON output + trace_id |
+| 4 | Input Validation | `pydantic` request parameter validation |
+| 5 | Environment Config | `LAYA_BASE_URL` overrides, `.env` support |
+| 6 | External Data Source | `--data file.json/.csv/-` |
+| 7 | Unified Output | `{"metadata": {...}, "results": [...]}` |
+| 8 | Progress Bar | Real-time `Classification |████| 30% 1.2/s ETA 5.0s` |
+| 9 | Risk Assessment | New scenario added |
+| 10 | Plugin Architecture | Automatic scene registration, no need to modify main.py |
+| 11 | CSV Output | `--format csv` |
+| 12 | Complete Testing | pytest + coverage |
 
 ---
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 1. 安装依赖
+### 1. Install Dependencies
 
 ```bash
 pip install pydantic pydantic-settings structlog requests httpx
 ```
 
-### 2. 环境配置
+### 2. Environment Configuration
 
 ```bash
 cp .env.example .env
@@ -66,39 +66,39 @@ export LAYA_TIMEOUT=30
 export LAYA_RETRY_TIMES=3
 ```
 
-### 3. 启动 Laya 服务
+### 3. Start Laya Service
 
 ```bash
-# 启动 Laya AI 服务
+# Start Laya AI service
 cd /Users/hotker/Workspace/laya
 ./start-laya.sh
 
-# 验证服务
+# Verify service
 curl http://localhost:8000/health
 ```
 
-### 4. 运行系统
+### 4. Run System
 
 ```bash
-# 交互式菜单
+# Interactive menu
 python src/main.py
 
-# 直接模式
-python src/main.py --classification   # 智能分类
-python src/main.py --sentiment        # 情感分析
-python src/main.py --intention        # 意图识别
-python src/main.py --recommend        # 推荐决策
-python src/main.py --risk             # 风险评估
-python src/main.py --batch            # 批量处理
+# Direct mode
+python src/main.py --classification   # Intelligent classification
+python src/main.py --sentiment        # Sentiment analysis
+python src/main.py --intention        # Intent recognition
+python src/main.py --recommend        # Recommendation decision
+python src/main.py --risk             # Risk assessment
+python src/main.py --batch            # Batch processing
 ```
 
-### 5. Docker 运行
+### 5. Docker
 
 ```bash
-# 构建
+# Build
 docker build -t laya-decision:v2 .
 
-# 运行
+# Run
 docker run -it --rm \
   -e LAYA_BASE_URL=http://laya-server:8000 \
   laya-decision:v2 --classification
@@ -106,34 +106,34 @@ docker run -it --rm \
 
 ---
 
-## 📁 系统结构
+## 📁 Project Structure
 
 ```
 laya_decision_system/
-├── src/                          # 核心入口
-│   └── main.py                   # CLI 主程序
-├── scenarios/                    # 决策场景（自动注册）
+├── src/                          # Core entry
+│   └── main.py                   # CLI main program
+├── scenarios/                    # Decision scenarios (auto-registration)
 │   ├── __init__.py
-│   ├── classification.py         # 智能分类
-│   ├── sentiment.py              # 情感分析
-│   ├── intention.py              # 意图识别
-│   ├── recommendation.py         # 推荐决策
-│   └── risk.py                   # 风险评估
-├── config/                       # 配置
-│   └── config.py                 # pydantic-settings 模型
-├── utils/                        # 工具模块
-│   ├── http_client.py            # 同步 HTTP（requests + 重试）
-│   ├── async_http_client.py      # 异步 HTTP（httpx）
-│   ├── validation.py             # 输入校验
-│   ├── output.py                 # 输出管理
-│   ├── data_source.py            # 数据源加载
-│   ├── logging_utils.py          # 结构化日志
-│   ├── plugin.py                 # 场景插件系统
-│   └── progress.py               # 进度条
-├── tests/                        # 测试
-├── output/                       # 决策输出
-├── docs/                         # 文档
-├── .github/                      # GitHub 自动化
+│   ├── classification.py         # Intelligent classification
+│   ├── sentiment.py              # Sentiment analysis
+│   ├── intention.py              # Intent recognition
+│   ├── recommendation.py         # Recommendation decision
+│   └── risk.py                   # Risk assessment
+├── config/                       # Configuration
+│   └── config.py                 # pydantic-settings model
+├── utils/                        # Utility modules
+│   ├── http_client.py            # Sync HTTP (requests + retry)
+│   ├── async_http_client.py      # Async HTTP (httpx)
+│   ├── validation.py             # Input validation
+│   ├── output.py                 # Output management
+│   ├── data_source.py            # Data source loading
+│   ├── logging_utils.py          # Structured logging
+│   ├── plugin.py                 # Scene plugin system
+│   └── progress.py               # Progress bar
+├── tests/                        # Tests
+├── output/                       # Decision output
+├── docs/                         # Documentation
+├── .github/                      # GitHub automation
 ├── Dockerfile                    # Docker
 ├── .dockerignore
 ├── .env.example
@@ -143,66 +143,66 @@ laya_decision_system/
 
 ---
 
-## 📊 功能模块
+## 📊 Feature Modules
 
-### 1. 智能分类
+### 1. Intelligent Classification
 
-**场景**：客户评论、工单、邮件等自动分类
+**Scenario**: Customer reviews, work orders, emails auto-classification
 
 ```bash
 python src/main.py --classification
 python src/main.py --classification --data reviews.json
 ```
 
-**分类维度**：质量、价格、服务、功能、设计
+**Classification Dimensions**: Quality, Price, Service, Feature, Design
 
-### 2. 情感分析
+### 2. Sentiment Analysis
 
-**场景**：产品评价、舆情监控、用户反馈
+**Scenario**: Product reviews, public opinion monitoring, user feedback
 
 ```bash
 python src/main.py --sentiment
 python src/main.py --sentiment --data comments.csv
 ```
 
-**情感维度**：非常正面 / 正面 / 中性 / 负面 / 非常负面
+**Sentiment Dimensions**: Very Positive / Positive / Neutral / Negative / Very Negative
 
-### 3. 意图识别
+### 3. Intent Recognition
 
-**场景**：客服咨询、搜索意图、营销意图
+**Scenario**: Customer service inquiries, search intent, marketing intent
 
 ```bash
 python src/main.py --intention
 python src/main.py --intention --data messages.json
 ```
 
-**意图维度**：咨询 / 投诉 / 购买 / 售后 / 好评
+**Intent Dimensions**: Inquiry / Complaint / Purchase / After-sales / Positive Review
 
-### 4. 推荐决策
+### 4. Recommendation Decision
 
-**场景**：产品推荐、营销策略
+**Scenario**: Product recommendations, marketing strategies
 
 ```bash
 python src/main.py --recommend
 ```
 
-**推荐维度**：高端品质 / 性价比 / 流行趋势 / 个性化 / 综合
+**Recommendation Dimensions**: Premium Quality / Cost-effective / Trend / Personalized / Comprehensive
 
-**营销维度**：折扣 / 内容营销 / 社交裂变 / 会员 / 精准推送
+**Marketing Dimensions**: Discount / Content Marketing / Social裂变 / Membership / Precision Push
 
-### 5. 风险评估（新增）
+### 5. Risk Assessment (New)
 
-**场景**：信贷、安全、合规风险
+**Scenario**: Credit, security, compliance risk
 
 ```bash
 python src/main.py --risk
 ```
 
-**风险维度**：高风险 / 中风险 / 低风险 / 安全
+**Risk Dimensions**: High Risk / Medium Risk / Low Risk / Safe
 
-### 6. 批量处理
+### 6. Batch Processing
 
-**场景**：大量数据快速分析
+**Scenario**: Rapid analysis of large volumes of data
 
 ```bash
 python src/main.py --batch
@@ -211,74 +211,74 @@ python src/main.py --batch --data bulk.csv --format csv
 
 ---
 
-## 📝 使用方式
+## 📝 Usage
 
-### CLI 选项
+### CLI Options
 
 ```
-python src/main.py [选项]
+python src/main.py [options]
 
-通用选项：
-  --classification    智能分类
-  --sentiment         情感分析
-  --intention         意图识别
-  --recommend         推荐决策
-  --risk              风险评估
-  --batch             批量处理
-  --health            检查服务状态
-  --list              列出所有可用场景
-  --data FILE         外部数据文件 (.json/.csv/-)
-  --format FORMAT     输出格式 (json|csv, 默认 json)
+General Options:
+  --classification    Intelligent classification
+  --sentiment         Sentiment analysis
+  --intention         Intent recognition
+  --recommend         Recommendation decision
+  --risk              Risk assessment
+  --batch             Batch processing
+  --health            Check service status
+  --list              List all available scenarios
+  --data FILE         External data file (.json/.csv/-)
+  --format FORMAT     Output format (json|csv, default json)
 ```
 
-### 数据源格式
+### Data Source Format
 
-**JSON 数组**：
+**JSON Array**:
 ```json
-[{"body": "评论 1"}, {"body": "评论 2"}]
+[{"body": "Review 1"}, {"body": "Review 2"}]
 ```
 
-**CSV**：
+**CSV**:
 ```csv
 body
-评论 1
-评论 2
-评论 3
+Review 1
+Review 2
+Review 3
 ```
 
 ---
 
-## ⚙️ 配置
+## ⚙️ Configuration
 
-### 环境变量
+### Environment Variables
 
-| 环境变量 | 默认值 | 说明 |
+| Variable | Default | Description |
 |----------|--------|------|
-| `LAYA_BASE_URL` | `http://localhost:8000` | Laya 服务地址 |
-| `LAYA_TIMEOUT` | `30` | 请求超时（秒） |
-| `LAYA_MODEL` | `multilingual` | 默认模型 |
-| `LAYA_MAX_BATCH_SIZE` | `100` | 批量最大分块 |
-| `LAYA_MAX_CONCURRENT_REQUESTS` | `5` | 异步并发数 |
-| `LAYA_RETRY_TIMES` | `3` | 重试次数 |
-| `LAYA_RETRY_DELAY` | `1.0` | 重试初始延迟（秒） |
-| `LAYA_OUTPUT_DIR` | `./output` | 输出目录 |
-| `LAYA_LOG_LEVEL` | `INFO` | 日志级别 |
-| `LAYA_LOG_FORMAT` | `json` | 日志格式 (`json`/`text`) |
+| `LAYA_BASE_URL` | `http://localhost:8000` | Laya service address |
+| `LAYA_TIMEOUT` | `30` | Request timeout (seconds) |
+| `LAYA_MODEL` | `multilingual` | Default model |
+| `LAYA_MAX_BATCH_SIZE` | `100` | Max batch chunk size |
+| `LAYA_MAX_CONCURRENT_REQUESTS` | `5` | Async concurrency |
+| `LAYA_RETRY_TIMES` | `3` | Retry times |
+| `LAYA_RETRY_DELAY` | `1.0` | Initial retry delay (seconds) |
+| `LAYA_OUTPUT_DIR` | `./output` | Output directory |
+| `LAYA_LOG_LEVEL` | `INFO` | Log level |
+| `LAYA_LOG_FORMAT` | `json` | Log format (`json`/`text`) |
 
 ---
 
-## 🧪 测试
+## 🧪 Testing
 
 ```bash
-# 运行所有测试
+# Run all tests
 pytest tests/ -v
 
-# 带覆盖率
+# With coverage
 pytest tests/ -v --cov=. --cov-report=term-missing
 ```
 
 ---
 
-## 📄 许可证
+## 📄 License
 
-本项目仅供学习和研究使用。
+This project is for learning and research purposes only.

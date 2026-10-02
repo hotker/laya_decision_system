@@ -1,33 +1,33 @@
 #!/bin/bash
-# Laya AI 决策系统 - 启动脚本
+# Laya AI Decision System - Startup Script
 
-# 获取脚本所在目录
+# Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# 显示欢迎信息
+# Display welcome message
 echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
 echo "║                                                              ║"
-echo "║        🧠 Laya AI 决策系统                                   ║"
-echo "║        Laya AI Decision System v1.0.0                      ║"
+echo "║        🧠 Laya AI Decision System                           ║"
+echo "║        Laya AI Decision System v2.0.0                      ║"
 echo "║                                                              ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
-# 检查 Python 版本
+# Check Python version
 python_version=$(python3 --version 2>&1)
-echo "🐍 Python 版本：$python_version"
+echo "🐍 Python version: $python_version"
 echo ""
 
-# 检查 Laya 服务
+# Check Laya service
 if curl -s http://localhost:8000/health >/dev/null 2>&1; then
-    echo "✅ Laya AI 服务已运行"
+    echo "✅ Laya AI service is running"
 else
-    echo "⚠️  Laya AI 服务未运行"
-    echo "   启动命令：cd /Users/hotker/Workspace/laya && ./start-laya.sh"
+    echo "⚠️  Laya AI service is not running"
+    echo "   Start command: cd /Users/hotker/Workspace/laya && ./start-laya.sh"
     echo ""
 fi
 
-# 执行主程序
+# Execute main program
 exec python3 src/main.py "$@"
