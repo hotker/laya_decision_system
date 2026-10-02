@@ -1,21 +1,21 @@
 """
-🧠 Laya AI 决策系统 v2.0 — 主入口
-================================
+🧠 Laya AI Decision System v2.0 — Main Entry
+============================================
 
-增强版 CLI，支持：
-  - 插件化场景注册
-  - 外部数据源 (--data)
-  - 进度条显示
-  - 结构化日志
-  - 输出格式选择 (--format csv)
+Enhanced CLI with:
+  - Plugin-based scenario registration
+  - External data source (--data)
+  - Progress bar display
+  - Structured logging
+  - Output format selection (--format csv)
 
-使用方式：
-  python src/main.py                  # 交互式菜单
-  python src/main.py --classification # 智能分类
-  python src/main.py --batch          # 批量处理
-  python src/main.py --data data.json # 外部数据
-  python src/main.py --format csv     # CSV 输出
-  python src/main.py --health         # 健康检查
+Usage:
+  python src/main.py                  # Interactive menu
+  python src/main.py --classification # Intelligent classification
+  python src/main.py --batch          # Batch processing
+  python src/main.py --data data.json # External data
+  python src/main.py --format csv     # CSV output
+  python src/main.py --health         # Health check
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ import sys
 import time
 from pathlib import Path
 
-# 确保项目根在路径中
+# Ensure project root is in path
 BASE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
@@ -37,28 +37,28 @@ from utils.output import clean_all, clean_old_files, list_output_files
 from utils.plugin import get_all_scenario_names, list_scenarios, register_scenarios
 from utils.progress import ProgressBar
 
-# 导入所有场景模块以触发注册
+# Import all scenario modules to trigger registration
 import scenarios  # noqa: F401
 
 
 def show_menu() -> None:
-    """显示主菜单"""
+    """Display main menu"""
     print(
         """
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║        🧠 Laya AI 决策系统 v2.0                              ║
+║        🧠 Laya AI Decision System v2.0                       ║
 ║                                                              ║
-║  功能模块：                                                  ║
+║  Modules:                                                    ║
 ║                                                              ║
-║  1️⃣  智能分类 — 文本/评论自动分类                            ║
-║  2️⃣  情感分析 — 情感倾向自动识别                            ║
-║  3️⃣  意图识别 — 用户意图自动识别                            ║
-║  4️⃣  推荐决策 — 个性化推荐与营销策略                        ║
-║  5️⃣  风险评估 — 风险等级自动评分                            ║
-║  6️⃣  批量处理 — 批量决策分析                                ║
-║  7️⃣  数据管理 — 查看/清理决策数据                           ║
-║  0️⃣  退出系统                                               ║
+║  1️⃣  Intelligent Classification — Text/comment auto-classify ║
+║  2️⃣  Sentiment Analysis — Emotion tendency recognition      ║
+║  3️⃣  Intent Recognition — User intent auto-recognition      ║
+║  4️⃣  Recommendation Decision — Personalized strategies      ║
+║  5️⃣  Risk Assessment — Risk level auto-scoring              ║
+║  6️⃣  Batch Processing — Batch decision analysis             ║
+║  7️⃣  Data Management — View/cleanup decision data           ║
+║  0️⃣  Exit System                                             ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 """
@@ -66,7 +66,7 @@ def show_menu() -> None:
 
 
 def setup_logging() -> None:
-    """初始化日志"""
+    """Initialize logging"""
     cfg = get_config()
     level = getattr(logging, cfg.logging.level.upper(), logging.INFO)
 
@@ -101,7 +101,7 @@ def setup_logging() -> None:
 
 
 class DecisionSystem:
-    """决策系统主控制器"""
+    """Decision system main controller"""
 
     def __init__(self, data_source: str | None = None, output_format: str = "json"):
         self.data_source = data_source
@@ -133,7 +133,7 @@ class DecisionSystem:
         run_risk_assessment()
 
     def run_batch(self) -> None:
-        """批量处理：使用默认数据或外部数据源"""
+        """Batch processing: use default data or external data source"""
         from utils.http_client import make_batch_request
         from utils.output import save_results
 
@@ -141,17 +141,17 @@ class DecisionSystem:
             """
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║        🧠 Laya AI 决策系统 — 批量处理                        ║
+║        🧠 Laya AI Decision System — Batch Processing         ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 """
         )
 
-        # 加载数据
+        # Load data
         if self.data_source:
             items = load_data(self.data_source, text_column="body")
             if items is None:
-                print("⚠️  数据文件为空，使用默认数据")
+                print("⚠️  Data file is empty, using default data")
                 items = _default_batch_items()
         else:
             items = _default_batch_items()
@@ -161,16 +161,16 @@ class DecisionSystem:
         questions = {
             "sentiment": {
                 "type": "choice",
-                "instructions": "分析情感倾向",
+                "instructions": "Analyze sentiment tendency",
                 "criteria": {
-                    "positive": "好评、推荐、质量好、性价比高",
-                    "negative": "差评、问题、不好、贵、差",
-                    "neutral": "一般、普通、还行",
+                    "positive": "Good review, recommended, good quality, cost-effective",
+                    "negative": "Bad review, problem, poor, expensive, bad",
+                    "neutral": "Average, ordinary, okay",
                 },
             }
         }
 
-        print(f"\n📝 开始批量处理（{len(states)} 条）...")
+        print(f"\n📝 Starting batch processing ({len(states)} items)...")
         print("-" * 70)
 
         t0 = time.monotonic()
@@ -184,10 +184,10 @@ class DecisionSystem:
                 confidence = item.get("confidence", 0)
                 body = states[i]["body"] if i < len(states) else ""
                 print(
-                    f"  {i+1}. {body[:40]:<40} {sentiment:<8} (置信度：{confidence:.2f})"
+                    f"  {i+1}. {body[:40]:<40} {sentiment:<8} (Confidence: {confidence:.2f})"
                 )
 
-            # 收集结果
+            # Collect results
             results_data = []
             for i, item in enumerate(result["results"]):
                 results_data.append(
@@ -202,132 +202,132 @@ class DecisionSystem:
             filename = save_results(
                 results_data, prefix="batch_all", decision_type="batch"
             )
-            print(f"\n💾 已保存：{filename}")
-            print(f"⏱  耗时：{elapsed:.2f}s ({len(result['results'])} 条, {elapsed/len(result['results'])*1000:.0f}ms/条)")
+            print(f"\n💾 Saved: {filename}")
+            print(f"⏱  Elapsed: {elapsed:.2f}s ({len(result['results'])} items, {elapsed/len(result['results'])*1000:.0f}ms/item)")
         else:
-            error_msg = result.get("error", "未知错误")
-            print(f"❌ 批量处理失败：{error_msg}")
+            error_msg = result.get("error", "Unknown error")
+            print(f"❌ Batch processing failed: {error_msg}")
 
     def run_data_management(self) -> None:
-        print("\n📁 数据管理")
+        print("\n📁 Data Management")
         print("-" * 60)
 
         files = list_output_files()
         if files:
-            print("\n📄 决策文件列表：")
+            print("\n📄 Decision files:")
             for f in files:
                 size = f.stat().st_size / 1024
                 print(f"  • {f.name} ({size:.1f} KB)")
         else:
-            print("❌ 没有决策文件")
+            print("❌ No decision files")
 
-        print("\n管理操作：")
-        print("  1. 删除旧文件（保留最近 10 个）")
-        print("  2. 清空所有数据")
+        print("\nManagement options:")
+        print("  1. Delete old files (keep latest 10)")
+        print("  2. Clear all data")
 
-        choice = input("\n请选择操作 [1-2] 或直接回车退出：").strip()
+        choice = input("\nSelect operation [1-2] or press Enter to exit:").strip()
 
         if choice == "1":
             deleted = clean_old_files(keep_count=10)
             if deleted > 0:
-                print(f"  已删除 {deleted} 个旧文件")
+                print(f"  Deleted {deleted} old files")
             else:
-                print("  无需清理")
+                print("  Nothing to clean")
         elif choice == "2":
-            confirm = input("⚠️  确认清空所有数据？(y/n): ").strip().lower()
+            confirm = input("⚠️  Confirm to clear all data? (y/n): ").strip().lower()
             if confirm == "y":
                 deleted = clean_all()
-                print(f"  ✅ 已清空 {deleted} 个文件")
+                print(f"  ✅ Cleared {deleted} files")
 
 
 def _default_batch_items() -> list[str]:
     return [
-        "产品很好，物流很快，客服态度也不错",
-        "质量太差了，用了两天就坏了，退货",
-        "价格实惠，性价比高，值得购买",
-        "包装很好，没有破损，五星好评",
-        "物流太慢了，等了半个月才到，体验很差",
+        "Product is good, fast shipping, good customer service",
+        "Quality is terrible, broke after two days, return it",
+        "Affordable price, cost-effective, worth buying",
+        "Good packaging, no damage, five-star review",
+        "Shipping too slow, waited half a month, poor experience",
     ]
 
 
-# ─── 主函数 ────────────────────────────────────────────────────
+# ─── Main function ──────────────────────────────────────────────
 
 
 def main() -> None:
-    """主入口"""
+    """Main entry point"""
     setup_logging()
 
     parser = argparse.ArgumentParser(
         description=f"{SYSTEM_NAME} v{VERSION}",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-使用示例：
-  python src/main.py                     # 交互式菜单
-  python src/main.py --classification    # 智能分类
-  python src/main.py --sentiment         # 情感分析
-  python src/main.py --intention         # 意图识别
-  python src/main.py --recommend         # 推荐决策
-  python src/main.py --risk              # 风险评估
-  python src/main.py --batch             # 批量处理
-  python src/main.py --data data.json    # 外部数据源
-  python src/main.py --format csv        # CSV 输出
-  python src/main.py --health            # 检查服务状态
+Usage examples:
+  python src/main.py                     # Interactive menu
+  python src/main.py --classification    # Intelligent classification
+  python src/main.py --sentiment         # Sentiment analysis
+  python src/main.py --intention         # Intent recognition
+  python src/main.py --recommend         # Recommendation decision
+  python src/main.py --risk              # Risk assessment
+  python src/main.py --batch             # Batch processing
+  python src/main.py --data data.json    # External data source
+  python src/main.py --format csv        # CSV output
+  python src/main.py --health            # Check service status
         """,
     )
 
-    parser.add_argument("--classification", action="store_true", help="智能分类")
-    parser.add_argument("--sentiment", action="store_true", help="情感分析")
-    parser.add_argument("--intention", action="store_true", help="意图识别")
-    parser.add_argument("--recommend", action="store_true", help="推荐决策")
-    parser.add_argument("--risk", action="store_true", help="风险评估")
-    parser.add_argument("--batch", action="store_true", help="批量处理")
-    parser.add_argument("--health", action="store_true", help="检查服务状态")
+    parser.add_argument("--classification", action="store_true", help="Intelligent classification")
+    parser.add_argument("--sentiment", action="store_true", help="Sentiment analysis")
+    parser.add_argument("--intention", action="store_true", help="Intent recognition")
+    parser.add_argument("--recommend", action="store_true", help="Recommendation decision")
+    parser.add_argument("--risk", action="store_true", help="Risk assessment")
+    parser.add_argument("--batch", action="store_true", help="Batch processing")
+    parser.add_argument("--health", action="store_true", help="Check service status")
 
-    # 通用选项
+    # General options
     parser.add_argument(
         "--data",
         type=str,
         default=None,
-        help="外部数据文件路径 (.json/.csv/-)",
+        help="External data file path (.json/.csv/-)",
     )
     parser.add_argument(
         "--format",
         choices=["json", "csv"],
         default="json",
-        help="输出格式 (default: json)",
+        help="Output format (default: json)",
     )
     parser.add_argument(
         "--list",
         action="store_true",
-        help="列出所有可用场景",
+        help="List all available scenarios",
     )
 
     args = parser.parse_args()
 
     system = DecisionSystem(data_source=args.data, output_format=args.format)
 
-    # 健康检查
+    # Health check
     if args.health:
         health = check_health()
         status = health.get("status", "unknown")
-        print(f"🔍 Laya 服务状态：{status}")
+        print(f"🔍 Laya service status: {status}")
         if status == "ok":
             print(f"   URL: {health.get('url', 'N/A')}")
-            print(f"   响应: {health.get('message', health)}")
+            print(f"   Response: {health.get('message', health)}")
         else:
-            print(f"   错误: {health.get('message', '未知错误')}")
+            print(f"   Error: {health.get('message', 'Unknown error')}")
         sys.exit(0 if status == "ok" else 1)
 
-    # 列出场景
+    # List scenarios
     if args.list:
         scenarios_list = list_scenarios()
-        print("\n📋 可用场景：")
+        print("\n📋 Available scenarios:")
         for s in scenarios_list:
             print(f"  • {s['name']:25s} {s['title']} ({s['decision_type']})")
         print()
         sys.exit(0)
 
-    # 场景路由
+    # Scenario routing
     if args.classification:
         system.run_classification()
     elif args.sentiment:
@@ -341,15 +341,15 @@ def main() -> None:
     elif args.batch:
         system.run_batch()
     else:
-        # 交互式菜单
+        # Interactive menu
         show_menu()
-        print(f"\n当前支持的决策类型：")
+        print(f"\nCurrently supported decision types:")
         for dtype, info in DECISION_TYPES.items():
-            print(f"  • {info['name']}：{info['description']}")
+            print(f"  • {info['name']}: {info['description']}")
 
         while True:
             try:
-                choice = input("\n请选择功能 [0-7]：").strip()
+                choice = input("\nSelect function [0-7]:").strip()
 
                 action_map = {
                     "1": system.run_classification,
@@ -364,17 +364,17 @@ def main() -> None:
                 if choice in action_map:
                     action_map[choice]()
                 elif choice == "0":
-                    print("\n👋 感谢使用！再见！")
+                    print("\n👋 Thanks for using! Goodbye!")
                     break
                 else:
-                    print("❌ 无效选择，请重新输入")
+                    print("❌ Invalid selection, please try again")
 
             except KeyboardInterrupt:
-                print("\n\n⚠️  用户中断")
+                print("\n\n⚠️  Interrupted by user")
                 break
             except Exception as e:
                 logging.error("Error in interactive mode: %s", e, exc_info=True)
-                print(f"❌ 错误：{e}")
+                print(f"❌ Error: {e}")
 
 
 if __name__ == "__main__":

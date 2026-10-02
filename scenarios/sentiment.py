@@ -1,9 +1,9 @@
 """
-情感分析场景（增强版）
-====================
-支持外部数据源输入，结构化日志输出
+Sentiment Analysis Scenario (Enhanced)
+======================================
+Supports external data source input, structured logging output
 
-使用方式：
+Usage:
     python main.py --sentiment
     python main.py --sentiment --data comments.json
 """
@@ -23,16 +23,16 @@ logger = logging.getLogger(__name__)
 
 
 def run_sentiment_analysis(data_source: Optional[str] = None) -> None:
-    """运行情感分析决策
+    """Run sentiment analysis decision
 
     Args:
-        data_source: 数据文件路径，None 使用默认数据
+        data_source: Data file path, None uses default data
     """
     print(
         """
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║        🧠 Laya AI 决策系统 — 情感分析决策                     ║
+║        🧠 Laya AI Decision System — Sentiment Analysis        ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 """
@@ -41,37 +41,37 @@ def run_sentiment_analysis(data_source: Optional[str] = None) -> None:
     questions = {
         "sentiment": {
             "type": "choice",
-            "instructions": "判断情感倾向",
+            "instructions": "Determine sentiment tendency",
             "criteria": {
-                "very_positive": "非常满意、强烈推荐、超出预期、太棒了",
-                "positive": "满意、推荐、不错、好、喜欢",
-                "neutral": "一般、普通、还好、正常",
-                "negative": "不满意、不推荐、差、失望",
-                "very_negative": "非常不满意、强烈不推荐、太糟糕了、避雷",
+                "very_positive": "Very satisfied, highly recommend, exceeded expectations, amazing",
+                "positive": "Satisfied, recommend, good, like, pleasant",
+                "neutral": "Average, ordinary, okay, normal",
+                "negative": "Dissatisfied, don't recommend, poor, disappointed",
+                "very_negative": "Very dissatisfied, strongly not recommend, terrible, avoid",
             },
         }
     }
 
     errors = validate_questions(questions)
     if errors:
-        print(f"❌ 问题定义校验失败: {'; '.join(errors)}")
+        print(f"❌ Question definition validation failed: {'; '.join(errors)}")
         return
 
     if data_source:
         items = load_data(data_source, text_column="body")
         if items is None:
-            print("⚠️  数据文件为空，使用默认数据")
+            print("⚠️  Data file is empty, using default data")
             items = _default_comments()
     else:
         items = _default_comments()
 
     comments = [{"body": item["body"]} if isinstance(item, dict) else {"body": item} for item in items]
 
-    print(f"\n📝 开始情感分析（{len(comments)} 条）...")
+    print(f"\n📝 Starting sentiment analysis ({len(comments)} items)...")
     print("-" * 70)
 
     results = []
-    with ProgressBar(total=len(comments), desc="情感") as p:
+    with ProgressBar(total=len(comments), desc="Sentiment") as p:
         for i, comment in enumerate(comments):
             body = comment["body"]
 
@@ -91,26 +91,26 @@ def run_sentiment_analysis(data_source: Optional[str] = None) -> None:
     _print_stats(results)
 
     filename = save_results(results, prefix="sentiment", decision_type="sentiment")
-    print(f"\n💾 已保存：{filename}")
+    print(f"\n💾 Saved: {filename}")
 
 
 def _default_comments() -> list[str]:
     return [
-        "这个产品太棒了！质量超好，强烈推荐！",
-        "挺好的，用了半个月没出问题",
-        "一般般吧，没什么特别的感觉",
-        "质量太差了，用了两天就坏了",
-        "非常不满意，退货了，大家别买！",
-        "价格实惠，性价比很高，值得购买",
-        "包装很好，物流也快，五星好评",
-        "客服态度好，处理问题及时",
-        "产品功能强大，超出预期",
-        "物流慢，客服回复不及时，体验差",
+        "This product is amazing! Great quality, highly recommend!",
+        "Pretty good, used for half a month without issues",
+        "Just okay, nothing special",
+        "Quality is terrible, broke after two days",
+        "Very dissatisfied, returned it, don't buy!",
+        "Affordable price, high cost-effectiveness, worth buying",
+        "Good packaging, fast logistics, five-star review",
+        "Customer service attitude is good, issues handled promptly",
+        "Product features are powerful, exceeded expectations",
+        "Slow logistics, customer service not responsive, poor experience",
     ]
 
 
 def _print_stats(results: list[dict]) -> None:
-    print("\n📊 情感分布：")
+    print("\n📊 Sentiment Distribution:")
     stats: dict[str, int] = {}
     for r in results:
         s = r.get("sentiment", "unknown")

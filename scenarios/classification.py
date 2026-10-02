@@ -1,12 +1,12 @@
 """
-智能分类场景（增强版）
-====================
-支持外部数据源输入，结构化日志输出
+Intelligent Classification Scenario (Enhanced)
+==============================================
+Supports external data source input, structured logging output
 
-使用方式：
-    python main.py --classification                 # 默认数据
-    python main.py --classification --data reviews.json  # 外部数据
-    python main.py --classification --data reviews.csv     # CSV 数据
+Usage:
+    python main.py --classification                 # Default data
+    python main.py --classification --data reviews.json  # External data
+    python main.py --classification --data reviews.csv     # CSV data
 """
 
 from __future__ import annotations
@@ -24,16 +24,16 @@ logger = logging.getLogger(__name__)
 
 
 def run_classification_example(data_source: Optional[str] = None) -> None:
-    """运行智能分类决策
+    """Run intelligent classification decision
 
     Args:
-        data_source: 数据文件路径（.json / .csv / "-"），None 使用默认数据
+        data_source: Data file path (.json / .csv / "-"), None uses default data
     """
     print(
         """
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║        🧠 Laya AI 决策系统 — 智能分类决策                     ║
+║        🧠 Laya AI Decision System — Intelligent Classification ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 """
@@ -42,43 +42,43 @@ def run_classification_example(data_source: Optional[str] = None) -> None:
     questions = {
         "category": {
             "type": "choice",
-            "instructions": "判断评论类别",
+            "instructions": "Determine review category",
             "criteria": {
-                "quality": "质量、做工、耐用、材质、工艺",
-                "price": "价格、贵、便宜、性价比、值",
-                "service": "客服、物流、安装、售后、发货",
-                "function": "功能、智能、操作、效果、体验",
-                "design": "外观、颜值、设计、款式、颜色",
+                "quality": "Quality, workmanship, durability, material, craftsmanship",
+                "price": "Price, expensive, cheap, cost-effective, value",
+                "service": "Customer service, logistics, installation, after-sales, shipping",
+                "function": "Features, smart, operation, effect, experience",
+                "design": "Appearance,颜值，design, style, color",
             },
         }
     }
 
-    # 校验
+    # Validation
     errors = validate_questions(questions)
     if errors:
-        print(f"❌ 问题定义校验失败: {'; '.join(errors)}")
+        print(f"❌ Question definition validation failed: {'; '.join(errors)}")
         return
 
-    # 加载数据
+    # Load data
     if data_source:
         items = load_data(data_source, text_column="body")
         if items is None:
-            print("⚠️  数据文件为空，使用默认数据")
+            print("⚠️  Data file is empty, using default data")
             items = _default_reviews()
     else:
         items = _default_reviews()
 
     reviews = [{"body": item["body"]} if isinstance(item, dict) else {"body": item} for item in items]
 
-    print(f"\n📝 开始分类决策（{len(reviews)} 条）...")
+    print(f"\n📝 Starting classification decision ({len(reviews)} items)...")
     print("-" * 70)
 
     results = []
-    with ProgressBar(total=len(reviews), desc="分类") as p:
+    with ProgressBar(total=len(reviews), desc="Classification") as p:
         for i, review in enumerate(reviews):
             body = review["body"]
 
-            # 校验输入
+            # Validate input
             state_errors = validate_state(body)
             if state_errors:
                 logger.warning("review %d validation failed: %s", i + 1, state_errors)
@@ -94,30 +94,30 @@ def run_classification_example(data_source: Optional[str] = None) -> None:
             results.append({"review": body, "category": category})
             p.update(1)
 
-    # 统计
-    _print_stats(results, "category", "📊 分类结果统计")
+    # Statistics
+    _print_stats(results, "category", "📊 Classification Results Statistics")
 
     filename = save_results(results, prefix="classification", decision_type="classification")
-    print(f"\n💾 已保存：{filename}")
+    print(f"\n💾 Saved: {filename}")
 
 
 def _default_reviews() -> list[str]:
     return [
-        "这个产品质量很好，做工精细，材质上乘",
-        "价格太贵了，性价比不高，不值得购买",
-        "客服态度很好，物流也很快，安装师傅专业",
-        "智能功能很实用，操作简便，体验不错",
-        "外观设计简约大方，颜色很喜欢，放在家里很搭",
-        "商品收到有破损，客服处理及时，给了补偿",
-        "用了三个月了，没什么问题，质量可靠",
-        "物流太慢了，等了半个月才到",
-        "产品功能强大，智能联动很方便",
-        "颜值很高，做工也不错，值得推荐",
+        "This product is of good quality, fine workmanship, premium material",
+        "The price is too expensive, not cost-effective, not worth buying",
+        "Customer service attitude is good, logistics is also fast, installation master is professional",
+        "Smart features are very practical, easy to operate, good experience",
+        "Simple and elegant appearance design, like the color, matches well at home",
+        "Product received with damage, customer service handled promptly, gave compensation",
+        "Used for three months, no problems, reliable quality",
+        "Logistics was too slow, waited half a month to arrive",
+        "Product features are powerful, smart linkage is convenient",
+        "High颜值，good workmanship, worth recommending",
     ]
 
 
 def _print_stats(results: list[dict], key: str, title: str) -> None:
-    """打印分类统计"""
+    """Print classification statistics"""
     print(f"\n{title}")
     print("=" * 70)
     stats: dict[str, int] = {}
