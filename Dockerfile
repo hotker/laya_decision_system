@@ -2,11 +2,14 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Dependencies
-COPY pyproject.toml requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Build dependency
+RUN pip install --no-cache-dir setuptools
 
-# Code
+# Install project (includes core + dev dependencies)
+COPY pyproject.toml ./
+RUN pip install --no-cache-dir -e ".[dev]"
+
+# Copy code
 COPY . .
 
 # Output directory

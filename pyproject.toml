@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "laya-decision-system"
+version = "2.0.0"
+description = "A Universal Intelligent Decision Platform Based on Laya AI Decision Engine"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "structlog>=23.2.0",
+]
+
+[project.optional-dependencies]
+async = ["httpx>=0.25.0"]
+dev = ["pytest>=7.4.0", "pytest-asyncio>=0.23.0", "pytest-cov>=4.1.0"]
+
+[project.scripts]
+laya = "src.main:main"
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["src", "config", "utils"]
+omit = [
+    "src/__init__.py",
+    "src/main.py",
+    "utils/__init__.py",
+    "utils/progress.py",
+    "utils/logging_utils.py",
+    "utils/async_http_client.py",
+]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = ['pragma: no cover', 'if __name__ == "__main__"']
+fail_under = 80
+show_missing = true
+precision = 1
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

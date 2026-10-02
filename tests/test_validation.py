@@ -5,6 +5,8 @@ Tests for input validation
 
 from __future__ import annotations
 
+import pytest
+
 from utils.validation import validate_state, validate_questions, DecisionRequest
 
 

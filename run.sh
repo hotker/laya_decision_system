@@ -21,11 +21,12 @@ echo "🐍 Python version: $python_version"
 echo ""
 
 # Check Laya service
-if curl -s http://localhost:8000/health >/dev/null 2>&1; then
+LAYA_URL="${LAYA_BASE_URL:-http://localhost:8000}"
+if curl -s "$LAYA_URL/health" >/dev/null 2>&1; then
     echo "✅ Laya AI service is running"
 else
     echo "⚠️  Laya AI service is not running"
-    echo "   Start command: cd /Users/hotker/Workspace/laya && ./start-laya.sh"
+    echo "   Start it first, or set LAYA_BASE_URL"
     echo ""
 fi
 

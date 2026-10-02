@@ -26,10 +26,6 @@ import sys
 import time
 from pathlib import Path
 
-# Ensure project root is in path
-BASE_DIR = Path(__file__).parent.parent
-sys.path.insert(0, str(BASE_DIR))
-
 from config.config import DECISION_TYPES, SYSTEM_NAME, VERSION, get_config
 from utils.data_source import load_data, save_output
 from utils.http_client import check_health
