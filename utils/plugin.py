@@ -1,14 +1,11 @@
 """
-场景插件系统
-============
-自动发现和注册决策场景
+Scenario Plugin System
+=======================
+Automatic scenario registration and discovery
 
-使用方式：
-    from plugin import register, get_scenario, list_scenarios
-
-    register("classification", "智能分类", "classification", fn)
-    scenario = get_scenario("classification")
-    scenario.run()
+Usage:
+    from utils.plugin import register, list_scenarios, get_all_scenario_names
+    register("my_scenario", "My Scenario", "decision_type", run_func)
 """
 
 from __future__ import annotations
@@ -18,80 +15,67 @@ from typing import Any, Callable
 
 logger = logging.getLogger(__name__)
 
-# 场景注册表: name -> {plugin: ScenarioPlugin, title: str, decision_type: str}
-_SCENARIOS: dict[str, dict[str, Any]] = {}
+# Global scenario registry
+_scenarios: list[dict[str, Any]] = []
 
 
-class ScenarioPlugin:
-    """场景插件封装"""
+def register(
+    name: str,
+    title: str,
+    decision_type: str,
+    run_func: Callable,
+) -> None:
+    """Register a scenario
 
-    def __init__(
-        self,
-        name: str,
-        title: str,
-        decision_type: str,
-        fn: Callable,
-    ):
-        self.name = name
-        self.title = title
-        self.decision_type = decision_type
-        self._fn = fn
-
-    def run(self, **kwargs: Any) -> Any:
-        """运行场景"""
-        return self._fn(**kwargs)
-
-    def __repr__(self) -> str:
-        return f"<Scenario {self.name}: {self.title}>"
-
-
-def register(name: str, title: str, decision_type: str, fn: Callable) -> None:
-    """注册一个场景插件"""
-    _SCENARIOS[name] = {
-        "fn": fn,
+    Args:
+        name: Scenario identifier
+        title: Human-readable title
+        decision_type: Decision type category
+        run_func: Function to execute
+    """
+    _scenarios.append({
+        "name": name,
         "title": title,
         "decision_type": decision_type,
-        "plugin": ScenarioPlugin(name, title, decision_type, fn),
-    }
-    logger.debug("scenario_registered name=%s title=%s", name, title)
+        "run_func": run_func,
+    })
+    logger.info("scenario_registered name=%s title=%s", name, title)
 
 
 def register_scenarios() -> None:
-    """从 scenarios 包导入所有子模块（触发注册装饰器）"""
-    import scenarios  # noqa: F401
+    """Register all scenarios by importing scenarios module"""
+    # This is called automatically when importing scenarios
+    pass
 
 
-def get_scenario(name: str) -> ScenarioPlugin:
-    """获取已注册的场景插件"""
-    if name not in _SCENARIOS:
-        raise KeyError(
-            f"Unknown scenario: {name!r}. Available: {list(_SCENARIOS.keys())}"
-        )
-    return _SCENARIOS[name]["plugin"]
+def list_scenarios() -> list[dict[str, Any]]:
+    """List all registered scenarios
 
-
-def list_scenarios() -> list[dict[str, str]]:
-    """列出所有已注册的场景"""
-    return [
-        {
-            "name": k,
-            "title": v["title"],
-            "decision_type": v["decision_type"],
-        }
-        for k, v in _SCENARIOS.items()
-    ]
+    Returns:
+        List of scenario dicts
+    """
+    return list(_scenarios)
 
 
 def get_all_scenario_names() -> list[str]:
-    """返回所有场景名称列表"""
-    return list(_SCENARIOS.keys())
+    """Get all registered scenario names
+
+    Returns:
+        List of scenario names
+    """
+    return [s["name"] for s in _scenarios]
 
 
-# 导出 _SCENARIOS 供 scenarios/__init__.py 使用
-__all__ = [
-    "register",
-    "register_scenarios",
-    "get_scenario",
-    "list_scenarios",
-    "get_all_scenario_names",
-]
+def get_scenario(name: str) -> dict[str, Any] | None:
+    """Get scenario by name
+
+    Args:
+        name: Scenario identifier
+
+    Returns:
+        Scenario dict or None
+    """
+    for s in _scenarios:
+        if s["name"] == name:
+            return s
+    return None

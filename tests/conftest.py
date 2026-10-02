@@ -1,5 +1,6 @@
 """
-Pytest 公共配置和 fixtures
+Pytest Common Configuration and Fixtures
+==========================================
 """
 
 import os
@@ -8,13 +9,13 @@ from pathlib import Path
 
 import pytest
 
-# 确保项目根在路径中
+# Ensure project root is in path
 BASE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
 
 def _reset_all():
-    """重置所有全局状态"""
+    """Reset all global state"""
     for key in list(os.environ.keys()):
         if key.startswith("LAYA_"):
             del os.environ[key]

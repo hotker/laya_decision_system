@@ -1,9 +1,9 @@
 """
-Laya AI 决策系统配置
-=====================
-集中管理所有配置参数，支持 .env 文件和环境变量覆盖
+Laya AI Decision System Configuration
+=======================================
+Centralized configuration management, supports .env files and environment variable overrides
 
-环境变量前缀: LAYA_
+Environment Variable Prefix: LAYA_
   LAYA_BASE_URL=http://localhost:8000
   LAYA_TIMEOUT=30
   LAYA_MODEL=multilingual
@@ -21,33 +21,33 @@ from typing import List, Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-SYSTEM_NAME = "Laya AI 决策系统"
+SYSTEM_NAME = "Laya AI Decision System"
 VERSION = "2.0.0"
 
 
-# ─── 模型定义 ──────────────────────────────────────────────────
+# ─── Model Definitions ──────────────────────────────────────────
 
 
 class LayaServerConfig(BaseSettings):
-    """Laya AI 服务连接配置"""
+    """Laya AI service connection configuration"""
 
     base_url: str = Field(
         default="http://localhost:8000",
         validation_alias="LAYA_BASE_URL",
-        description="Laya 服务基础地址",
+        description="Laya service base URL",
     )
     timeout: int = Field(default=30, validation_alias="LAYA_TIMEOUT", ge=1, le=300)
     model: str = Field(
         default="multilingual",
         validation_alias="LAYA_MODEL",
-        description="默认使用的模型名称",
+        description="Default model name to use",
     )
     task: Optional[str] = Field(default=None, validation_alias="LAYA_TASK")
     lang: Optional[str] = Field(default=None, validation_alias="LAYA_LANG")
 
 
 class OutputConfig(BaseSettings):
-    """输出配置"""
+    """Output configuration"""
 
     directory: Path = Field(
         default=Path("./output"),
@@ -59,7 +59,7 @@ class OutputConfig(BaseSettings):
 
 
 class PerformanceConfig(BaseSettings):
-    """性能与容错配置"""
+    """Performance and fault tolerance configuration"""
 
     max_batch_size: int = Field(
         default=100,
@@ -95,28 +95,28 @@ class PerformanceConfig(BaseSettings):
 
 
 class LoggingConfig(BaseSettings):
-    """日志配置"""
+    """Logging configuration"""
 
     level: str = Field(default="INFO", validation_alias="LAYA_LOG_LEVEL")
     format: str = Field(
         default="json",
         validation_alias="LAYA_LOG_FORMAT",
-        description="日志格式: json | text",
+        description="Log format: json | text",
     )
 
 
-# ─── 全局配置实例 ──────────────────────────────────────────────
+# ─── Global Configuration Instance ──────────────────────────────
 
 
 class Settings(BaseSettings):
-    """顶层配置，读取 LAYA_ 前缀的环境变量"""
+    """Top-level configuration, reads LAYA_ prefixed environment variables"""
 
     server: LayaServerConfig = Field(default_factory=LayaServerConfig)
     output: OutputConfig = Field(default_factory=OutputConfig)
     performance: PerformanceConfig = Field(default_factory=PerformanceConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
 
-    # 系统元信息（不作为配置项，但可通过环境变量覆盖）
+    # System metadata (not a configuration item, but overridable via env vars)
     system_name: str = Field(
         default=SYSTEM_NAME,
         validation_alias="LAYA_SYSTEM_NAME",
@@ -126,19 +126,19 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="LAYA_")
 
 
-# 全局单例
+# Global singleton
 _settings: Optional[Settings] = None
 
 
 def get_settings() -> Settings:
-    """获取全局配置单例（惰性初始化）"""
+    """Get global configuration singleton (lazy initialization)"""
     global _settings
     if _settings is None:
         _settings = Settings()
     return _settings
 
 
-# 别名
+# Alias
 get_config = get_settings
 
 
@@ -154,7 +154,7 @@ def get_output() -> OutputConfig:
     return get_settings().output
 
 
-# ─── 向后兼容字典（遗留代码使用） ──────────────────────────────
+# ─── Backward Compatible Dictionaries (for legacy code) ─────────
 
 LAYA_CONFIG: dict = {
     "BASE_URL": "http://localhost:8000",
@@ -169,29 +169,29 @@ LAYA_CONFIG: dict = {
 
 DECISION_TYPES: dict = {
     "classification": {
-        "name": "智能分类",
-        "description": "文本/评论/内容自动分类",
-        "use_cases": ["客户评论分类", "工单自动分配", "内容审核", "邮件分类"],
+        "name": "Intelligent Classification",
+        "description": "Automatic classification of text/comments/content",
+        "use_cases": ["Customer review classification", "Ticket auto-assignment", "Content moderation", "Email classification"],
     },
     "sentiment": {
-        "name": "情感分析",
-        "description": "情感倾向自动识别",
-        "use_cases": ["产品评价分析", "舆情监控", "品牌口碑分析", "用户反馈分析"],
+        "name": "Sentiment Analysis",
+        "description": "Automatic sentiment tendency recognition",
+        "use_cases": ["Product review analysis", "Public opinion monitoring", "Brand reputation analysis", "User feedback analysis"],
     },
     "intention": {
-        "name": "意图识别",
-        "description": "用户意图自动识别",
-        "use_cases": ["客服意图识别", "搜索意图分析", "营销意图判断", "需求理解"],
+        "name": "Intent Recognition",
+        "description": "Automatic user intent recognition",
+        "use_cases": ["Customer service intent recognition", "Search intent analysis", "Marketing intent judgment", "Requirement understanding"],
     },
     "risk": {
-        "name": "风险评估",
-        "description": "风险等级自动评分",
-        "use_cases": ["信贷风险评估", "欺诈检测", "合规审核", "安全预警"],
+        "name": "Risk Assessment",
+        "description": "Automatic risk level scoring",
+        "use_cases": ["Credit risk assessment", "Fraud detection", "Compliance review", "Security alerts"],
     },
     "recommendation": {
-        "name": "推荐决策",
-        "description": "个性化推荐与策略制定",
-        "use_cases": ["产品推荐", "营销策略制定", "个性化推送", "内容推荐"],
+        "name": "Recommendation Decision",
+        "description": "Personalized recommendation and strategy formulation",
+        "use_cases": ["Product recommendation", "Marketing strategy formulation", "Personalized push", "Content recommendation"],
     },
 }
 

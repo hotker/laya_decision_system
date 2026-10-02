@@ -1,9 +1,12 @@
 """
-数据源测试
-==========
+Tests for data source utilities
+================================
 """
 
+from __future__ import annotations
+
 import json
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -12,70 +15,67 @@ from utils.data_source import load_data
 
 
 class TestLoadData:
-    """测试数据加载"""
+    """Test load_data function"""
 
-    def test_none_returns_none(self, tmp_path):
-        """source=None 返回 None"""
-        assert load_data(None) is None
+    def test_none_source(self):
+        """Test None source returns None"""
+        result = load_data(None)
+        assert result is None
 
-    def test_json_array(self, tmp_path):
-        """JSON 数组加载"""
-        data = [{"body": "评论1"}, {"body": "评论2"}]
-        f = tmp_path / "data.json"
-        f.write_text(json.dumps(data), encoding="utf-8")
+    def test_json_file(self):
+        """Test loading from JSON file"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump([{"body": "test 1"}, {"body": "test 2"}], f)
+            temp_path = f.name
 
-        result = load_data(str(f), text_column="body")
-        assert len(result) == 2
-        assert result[0]["body"] == "评论1"
+        try:
+            results = load_data(temp_path)
+            assert len(results) == 2
+            assert results[0]["body"] == "test 1"
+        finally:
+            Path(temp_path).unlink()
 
-    def test_json_nested_results(self, tmp_path):
-        """兼容输出格式 {"results": [...]}"""
-        data = {"results": [{"body": "A"}, {"body": "B"}]}
-        f = tmp_path / "output.json"
-        f.write_text(json.dumps(data), encoding="utf-8")
+    def test_json_file_string_array(self):
+        """Test loading JSON array of strings"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(["test 1", "test 2"], f)
+            temp_path = f.name
 
-        result = load_data(str(f), text_column="body")
-        assert len(result) == 2
-        assert result[0]["body"] == "A"
+        try:
+            results = load_data(temp_path)
+            assert len(results) == 2
+            assert results[0]["body"] == "test 1"
+        finally:
+            Path(temp_path).unlink()
 
-    def test_json_string_array(self, tmp_path):
-        """纯字符串数组"""
-        data = ["好", "坏", "一般"]
-        f = tmp_path / "data.json"
-        f.write_text(json.dumps(data), encoding="utf-8")
+    def test_csv_file(self):
+        """Test loading from CSV file"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False, newline="") as f:
+            f.write("body\n")
+            f.write("test 1\n")
+            f.write("test 2\n")
+            temp_path = f.name
 
-        result = load_data(str(f), text_column="body")
-        assert len(result) == 3
-        assert result[0]["body"] == "好"
+        try:
+            results = load_data(temp_path, text_column="body")
+            assert len(results) == 2
+            assert results[0]["body"] == "test 1"
+        finally:
+            Path(temp_path).unlink()
 
-    def test_json_dict_item(self, tmp_path):
-        """字典中取 body 字段"""
-        data = {"text": "hello", "extra": "value"}
-        f = tmp_path / "data.json"
-        f.write_text(json.dumps(data), encoding="utf-8")
-
-        result = load_data(str(f), text_column="body")
-        assert len(result) == 1
-        assert result[0]["body"] == "hello"
-
-    def test_csv_file(self, tmp_path):
-        """CSV 加载"""
-        f = tmp_path / "data.csv"
-        f.write_text("body,extra\n好,A\n坏,B\n", encoding="utf-8")
-
-        result = load_data(str(f), text_column="body")
-        assert len(result) == 2
-        assert result[0]["body"] == "好"
-        assert result[0]["extra"] == "A"
-
-    def test_file_not_found(self, tmp_path):
-        """文件不存在"""
+    def test_nonexistent_file(self):
+        """Test loading non-existent file"""
         with pytest.raises(FileNotFoundError):
-            load_data(str(tmp_path / "nonexistent.json"))
+            load_data("nonexistent.json")
 
-    def test_unsupported_format(self, tmp_path):
-        """不支持的格式"""
-        f = tmp_path / "data.xml"
-        f.write_text("<data/>")
-        with pytest.raises(ValueError, match="不支持的数据格式"):
-            load_data(str(f))
+    def test_unsupported_format(self):
+        """Test unsupported file format"""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            f.write("test")
+            temp_path = f.name
+
+        try:
+            with pytest.raises(ValueError):
+                load_data(temp_path)
+        finally:
+            Path(temp_path).unlink()

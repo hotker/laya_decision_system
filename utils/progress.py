@@ -1,13 +1,13 @@
 """
-进度显示工具
-============
-为批量处理提供终端进度条
+Progress Bar
+=============
+Display progress bar for long-running operations
 
-使用方式：
+Usage:
     from progress import ProgressBar
     with ProgressBar(total=100, desc="Processing") as p:
         for i in range(100):
-            process(item)
+            # do work
             p.update(1)
 """
 
@@ -15,91 +15,92 @@ from __future__ import annotations
 
 import sys
 import time
-from typing import Optional
+from typing import Any
 
 
 class ProgressBar:
-    """终端进度条"""
-
-    BAR_WIDTH = 40
+    """Simple progress bar"""
 
     def __init__(
         self,
         total: int,
-        desc: str = "",
-        width: int = 60,
-    ):
+        desc: str = "Processing",
+        width: int = 40,
+    ) -> None:
+        """Initialize progress bar
+
+        Args:
+            total: Total number of items
+            desc: Description label
+            width: Bar width in characters
+        """
         self.total = total
         self.desc = desc
         self.width = width
         self.current = 0
         self.start_time = time.monotonic()
 
-    def __enter__(self):
-        self._draw()
+    def __enter__(self) -> "ProgressBar":
         return self
 
-    def __exit__(self, *args):
-        print()  # 换行
+    def __exit__(self, *args: Any) -> None:
+        print()  # Newline after progress bar
 
     def update(self, n: int = 1) -> None:
+        """Update progress by n
+
+        Args:
+            n: Number of items to advance
+        """
         self.current += n
-        self._draw()
+        self._render()
 
-    def _draw(self) -> None:
+    def _render(self) -> None:
+        """Render progress bar"""
         if self.total == 0:
-            frac = 1.0
-        else:
-            frac = min(self.current / self.total, 1.0)
+            return
 
-        filled = int(self.BAR_WIDTH * frac)
-        empty = self.BAR_WIDTH - filled
-        pct = int(frac * 100)
+        pct = min(self.current / self.total, 1.0)
+        filled = int(self.width * pct)
+        bar = "█" * filled + "░" * (self.width - filled)
 
         elapsed = time.monotonic() - self.start_time
-        if self.current > 0:
-            rate = self.current / elapsed  # items/sec
-            eta = (self.total - self.current) / rate if rate > 0 else 0
+        rate = self.current / elapsed if elapsed > 0 else 0
+        eta = (self.total - self.current) / rate if rate > 0 else 0
+
+        # Format ETA
+        if eta > 3600:
+            eta_str = f"{eta/3600:.1f}h"
+        elif eta > 60:
+            eta_str = f"{eta/60:.1f}m"
         else:
-            rate = 0
-            eta = 0
+            eta_str = f"{eta:.1f}s"
 
-        eta_str = f"{eta:.1f}s" if eta > 0 else "0s"
-
-        bar = "█" * filled + "░" * empty
-        line = f"\r{self.desc} |{bar}| {pct:3d}% ({self.current}/{self.total}) {rate:.1f}/s  ETA {eta_str}"
-
-        # 截断到终端宽度
-        if len(line) > self.width:
-            line = line[: self.width - 1] + "…"
-
+        line = f"\r{self.desc} |{bar}| {pct*100:5.1f}% {rate:.1f}/s ETA {eta_str}  "
         sys.stdout.write(line)
         sys.stdout.flush()
 
 
-def spinner(desc: str) -> "Spinner":
-    """返回一个一次性 spinner（用于未知总数的任务）"""
-    return Spinner(desc)
+class SimpleProgress:
+    """Simple text progress without bar"""
 
-
-class Spinner:
-    """加载 spinner"""
-
-    FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
-
-    def __init__(self, desc: str):
+    def __init__(
+        self,
+        total: int,
+        desc: str = "Processing",
+    ) -> None:
+        self.total = total
         self.desc = desc
-        self.index = 0
+        self.current = 0
 
-    def __enter__(self):
+    def __enter__(self) -> "SimpleProgress":
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: Any) -> None:
         print()
 
-    def tick(self) -> None:
-        frame = self.FRAMES[self.index % len(self.FRAMES)]
-        self.index += 1
-        line = f"\r{frame} {self.desc}"
-        sys.stdout.write(line)
-        sys.stdout.flush()
+    def update(self, n: int = 1) -> None:
+        """Update progress by n"""
+        self.current += n
+        pct = self.current / self.total * 100
+        print(f"\r{self.desc}: {self.current}/{self.total} ({pct:.1f}%)", end="", flush=True)

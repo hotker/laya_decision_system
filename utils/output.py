@@ -1,15 +1,15 @@
 """
-输出工具
-========
-统一处理决策结果的保存和统计
+Output Utilities
+================
+Unified handling of decision result saving and statistics
 
-功能：
-  - JSON 结果保存（自动去重文件名）
-  - CSV 结果保存
-  - 单条/批量结果统一格式
-  - 旧文件自动清理
+Features:
+  - JSON result saving (auto-unique filenames)
+  - CSV result saving
+  - Unified format for single/batch results
+  - Old file auto-cleanup
 
-使用方式：
+Usage:
     from output import save_results, list_output_files, clean_old_files
 """
 
@@ -27,26 +27,26 @@ from config.config import get_config
 
 logger = logging.getLogger(__name__)
 
-# ─── 统一输出格式 ──────────────────────────────────────────────
+# ─── Unified Output Format ──────────────────────────────────────
 
 OUTPUT_DIR = get_config().output.directory
 
 
 def _ensure_dir() -> Path:
-    """确保输出目录存在"""
+    """Ensure output directory exists"""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     return OUTPUT_DIR
 
 
 def _gen_filename(prefix: str) -> str:
-    """生成带唯一标识的文件名，避免同一秒内覆盖"""
+    """Generate filename with unique identifier to avoid overwriting within same second"""
     _ensure_dir()
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     uid = uuid.uuid4().hex[:6]
     return str(OUTPUT_DIR / f"{prefix}_{ts}_{uid}.json")
 
 
-# ─── 保存 ──────────────────────────────────────────────────────
+# ─── Saving ─────────────────────────────────────────────────────
 
 
 def save_results(
@@ -55,9 +55,9 @@ def save_results(
     decision_type: str | None = None,
     trace_id: str | None = None,
 ) -> str:
-    """批量结果保存为统一格式 JSON
+    """Save batch results as unified JSON format
 
-    格式：
+    Format:
     {
       "metadata": { ... },
       "results": [ ... ]
@@ -94,7 +94,7 @@ def save_single_result(
     decision_type: str | None = None,
     trace_id: str | None = None,
 ) -> str:
-    """单条结果保存为统一格式 JSON"""
+    """Save single result as unified JSON format"""
     cfg = get_config()
     path = _gen_filename(prefix)
 
@@ -123,9 +123,9 @@ def save_results_csv(
     results: list[dict],
     prefix: str = "decision",
 ) -> str:
-    """批量结果保存为 CSV
+    """Save batch results as CSV
 
-    返回 CSV 文件路径
+    Returns CSV file path
     """
     _ensure_dir()
     path = str(OUTPUT_DIR / f"{prefix}_{uuid.uuid4().hex[:6]}.csv")
@@ -136,7 +136,7 @@ def save_results_csv(
             f.write("")
         return path
 
-    # 展平数据
+    # Flatten data
     flat: list[dict] = []
     for item in results:
         meta = item.get("metadata", {})
@@ -158,11 +158,11 @@ def save_results_csv(
     return path
 
 
-# ─── 查询 & 清理 ───────────────────────────────────────────────
+# ─── Query & Cleanup ───────────────────────────────────────────
 
 
 def list_output_files(pattern: str = "batch_decision_*.json") -> list[Path]:
-    """列出输出目录中的文件，按修改时间倒序"""
+    """List files in output directory, sorted by modification time descending"""
     _ensure_dir()
     files = list(OUTPUT_DIR.glob(pattern))
     files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
@@ -173,10 +173,10 @@ def clean_old_files(
     pattern: str = "batch_decision_*.json",
     keep_count: int | None = None,
 ) -> int:
-    """清理旧文件，只保留最近 keep_count 个
+    """Clean old files, keep only latest keep_count
 
     Returns:
-        已删除的文件数量
+        Number of deleted files
     """
     if keep_count is None:
         keep_count = get_config().output.max_files
@@ -191,10 +191,10 @@ def clean_old_files(
 
 
 def clean_all(pattern: str = "*.json") -> int:
-    """清空所有输出文件
+    """Clear all output files
 
     Returns:
-        已删除的文件数量
+        Number of deleted files
     """
     _ensure_dir()
     files = list(OUTPUT_DIR.glob(pattern))

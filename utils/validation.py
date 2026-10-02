@@ -1,13 +1,13 @@
 """
-输入校验
-========
-基于 pydantic 的请求参数校验
+Input Validation
+================
+Request parameter validation based on pydantic
 
-使用方式：
+Usage:
     from validation import validate_state, validate_questions, DecisionRequest
-    errors = validate_state("文本内容")
+    errors = validate_state("text content")
     errors = validate_questions({"category": {...}})
-    req = DecisionRequest(state="文本", questions={...})
+    req = DecisionRequest(state="text", questions={...})
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class DecisionRequest(BaseModel):
-    """完整的决策请求模型"""
+    """Complete decision request model"""
 
     state: str
     questions: dict[str, dict[str, Any]]
@@ -28,39 +28,39 @@ class DecisionRequest(BaseModel):
     def strip_state(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("state 不能为空")
+            raise ValueError("state cannot be empty")
         if len(v) > 10000:
-            raise ValueError("state 长度超过 10000")
+            raise ValueError("state length exceeds 10000")
         return v
 
     @field_validator("questions", mode="before")
     @classmethod
     def validate_questions(cls, v: dict) -> dict:
         if not v:
-            raise ValueError("questions 不能为空")
+            raise ValueError("questions cannot be empty")
         for key, q in v.items():
             key_str = str(key).strip()
             if not key_str:
-                raise ValueError("问题 key 不能为空")
+                raise ValueError("Question key cannot be empty")
             if not isinstance(q, dict):
-                raise ValueError(f"问题 {key!r} 格式错误")
+                raise ValueError(f"Question {key!r} format error")
             if "type" not in q:
-                raise ValueError(f"问题 {key!r} 缺少 type 字段")
+                raise ValueError(f"Question {key!r} missing type field")
             if "instructions" not in q:
-                raise ValueError(f"问题 {key!r} 缺少 instructions 字段")
+                raise ValueError(f"Question {key!r} missing instructions field")
             if "criteria" not in q:
-                raise ValueError(f"问题 {key!r} 缺少 criteria 字段")
+                raise ValueError(f"Question {key!r} missing criteria field")
             criteria = q.get("criteria", {})
             if not criteria:
-                raise ValueError(f"问题 {key!r} 的 criteria 不能为空")
+                raise ValueError(f"criteria for question {key!r} cannot be empty")
             for ck, cv in criteria.items():
                 if not cv or not str(cv).strip():
-                    raise ValueError(f"criteria[{ck!r}] 的描述不能为空")
+                    raise ValueError(f"criteria[{ck!r}] description cannot be empty")
         return v
 
 
 class BatchRequest(BaseModel):
-    """批量请求模型"""
+    """Batch request model"""
 
     states: list[dict[str, Any]]
     questions: dict[str, dict[str, Any]]
@@ -69,15 +69,15 @@ class BatchRequest(BaseModel):
     @classmethod
     def states_not_empty(cls, v: list) -> list:
         if not v:
-            raise ValueError("states 不能为空")
+            raise ValueError("states cannot be empty")
         return v
 
 
 def validate_state(text: str) -> list[str]:
-    """校验输入文本
+    """Validate input text
 
     Returns:
-        错误列表，为空表示通过
+        Error list, empty means passed
     """
     try:
         DecisionRequest(state=text, questions={"__dummy__": {"type": "choice", "instructions": "dummy", "criteria": {"a": "b"}}})
@@ -87,10 +87,10 @@ def validate_state(text: str) -> list[str]:
 
 
 def validate_questions(questions: dict) -> list[str]:
-    """校验问题定义
+    """Validate question definition
 
     Returns:
-        错误列表，为空表示通过
+        Error list, empty means passed
     """
     try:
         DecisionRequest(state="x", questions=questions)
@@ -102,10 +102,10 @@ def validate_questions(questions: dict) -> list[str]:
 def parse_decision_request(
     state: str, questions: dict
 ) -> tuple[DecisionRequest | None, list[str]]:
-    """解析并校验决策请求
+    """Parse and validate decision request
 
     Returns:
-        (parsed_request, errors) — errors 为空表示成功
+        (parsed_request, errors) — errors empty means success
     """
     try:
         return DecisionRequest(state=state, questions=questions), []

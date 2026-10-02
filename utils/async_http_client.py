@@ -1,12 +1,11 @@
 """
-异步 HTTP 客户端
-================
-基于 httpx 的异步请求支持，用于高并发批量场景
+Async HTTP Client
+=================
+Asynchronous HTTP client based on httpx for high-concurrency batch processing
 
-使用方式：
+Usage:
     from async_http_client import async_make_predict_request, async_batch_concurrent
-    result = await async_make_predict_request("文本内容", questions={...})
-    results = await async_batch_concurrent(states, questions)
+    result = await async_make_predict_request("text content", questions={...})
 """
 
 from __future__ import annotations
@@ -15,23 +14,27 @@ import asyncio
 import logging
 from typing import Any, Optional
 
-try:
-    import httpx
+import httpx
 
-    _HAS_HTTPX = True
-except ImportError:
-    _HAS_HTTPX = False
+from config.config import get_config
 
 logger = logging.getLogger(__name__)
 
 
-def require_httpx() -> None:
-    """确保 httpx 已安装"""
-    if not _HAS_HTTPX:
-        raise RuntimeError(
-            "async HTTP client requires httpx. "
-            "Install it with: pip install httpx>=0.25.0"
-        )
+# ─── Async Session Management ───────────────────────────────────
+
+
+def _get_async_client() -> httpx.AsyncClient:
+    """Get async HTTP client instance"""
+    cfg = get_config()
+    return httpx.AsyncClient(
+        base_url=cfg.server.base_url,
+        timeout=httpx.Timeout(cfg.server.timeout),
+        follow_redirects=True,
+    )
+
+
+# ─── Async Single Request ───────────────────────────────────────
 
 
 async def async_make_predict_request(
@@ -40,30 +43,26 @@ async def async_make_predict_request(
     model: Optional[str] = None,
     task: Optional[str] = None,
     lang: Optional[str] = None,
-    timeout: Optional[float] = None,
+    timeout: Optional[int] = None,
     trace_id: Optional[str] = None,
 ) -> dict[str, Any]:
-    """异步发送单条预测请求
-
-    使用 httpx 非阻塞发送，适合高并发场景。
+    """Send single prediction request asynchronously
 
     Args:
-        state: 输入文本
-        questions: 问题定义
-        model: 模型名称
-        task: 任务类型
-        lang: 语言代码
-        timeout: 超时秒数
-        trace_id: 追踪 ID
+        state: Input text/state
+        questions: Question definition
+        model: Model name
+        task: Task type
+        lang: Language code
+        timeout: Timeout in seconds
+        trace_id: Trace ID
 
     Returns:
-        服务响应字典，失败时返回 {"error": str}
+        Service response dict, returns {"error": str} on failure
     """
-    require_httpx()
-    from config.config import get_config
-
     cfg = get_config()
-    url = f"{cfg.server.base_url}/predict"
+    client = _get_async_client()
+    url = "/predict"
     timeout = timeout or cfg.server.timeout
     model = model or cfg.server.model
 
@@ -80,98 +79,84 @@ async def async_make_predict_request(
         payload["trace_id"] = trace_id
 
     try:
-        async with httpx.AsyncClient(
-            timeout=httpx.Timeout(cfg.server.timeout),
-            limits=httpx.Limits(max_connections=50),
-        ) as client:
-            resp = await client.post(url, json=payload)
+        logger.debug("async_predict_request url=%s trace_id=%s", url, trace_id)
+        resp = await client.post(url, json=payload, timeout=timeout)
 
-            if resp.status_code != 200:
-                logger.error(
-                    "async_predict_http_error status=%d trace_id=%s",
-                    resp.status_code,
-                    trace_id,
-                )
-                return {"error": f"HTTP {resp.status_code}: {resp.text[:200]}"}
+        if resp.status_code != 200:
+            logger.error(
+                "async_predict_http_error status=%d trace_id=%s", resp.status_code, trace_id
+            )
+            return {"error": f"HTTP {resp.status_code}: {resp.text[:200]}"}
 
-            return resp.json()
+        try:
+            result = resp.json()
+            logger.debug(
+                "async_predict_response trace_id=%s result_keys=%s",
+                trace_id,
+                list(result.keys()),
+            )
+            return result
+        except ValueError as exc:
+            logger.error("async_invalid_json trace_id=%s error=%s", trace_id, exc)
+            return {"error": f"Invalid JSON response: {exc}"}
 
     except httpx.TimeoutException as exc:
-        logger.error("async_predict_timeout trace_id=%s", trace_id)
+        logger.error("async_predict_timeout trace_id=%s error=%s", trace_id, exc)
         return {"error": f"Timeout after {timeout}s"}
-    except httpx.ConnectionError as exc:
+    except httpx.ConnectError as exc:
+        logger.error("async_predict_conn_error trace_id=%s error=%s", trace_id, exc)
         return {"error": f"Connection error: {exc}"}
-    except ValueError as exc:
-        return {"error": f"Invalid JSON: {exc}"}
-    except Exception as exc:
+    except httpx.RequestError as exc:
         logger.error("async_predict_error trace_id=%s error=%s", trace_id, exc)
         return {"error": str(exc)}
+    except Exception as exc:
+        logger.error("async_predict_unexpected trace_id=%s error=%s", trace_id, exc)
+        return {"error": str(exc)}
+    finally:
+        await client.aclose()
+
+
+# ─── Async Batch Request ────────────────────────────────────────
 
 
 async def async_batch_concurrent(
     states: list[dict],
     questions: dict,
-    model: Optional[str] = None,
-    timeout: Optional[float] = None,
-    trace_id: Optional[str] = None,
+    max_concurrent: int | None = None,
 ) -> dict[str, Any]:
-    """异步批量预测请求（并发执行）
-
-    按 MAX_CONCURRENT_REQUESTS 并发发送单条请求。
+    """Execute batch requests concurrently
 
     Args:
-        states: 状态列表，每项含 "body" 字段
-        questions: 问题定义
-        model: 模型名称
-        timeout: 超时秒数
-        trace_id: 追踪 ID
+        states: State list
+        questions: Question definition
+        max_concurrent: Maximum concurrent requests
 
     Returns:
-        {"results": [...], "errors": [...], "progress": {...}}
+        Dict containing "results" list
     """
-    require_httpx()
-    from config.config import get_config
-
     cfg = get_config()
-    concurrency = cfg.performance.max_concurrent_requests
+    if max_concurrent is None:
+        max_concurrent = cfg.performance.max_concurrent_requests
 
-    async def _one(i: int, state: dict) -> dict[str, Any]:
-        tid = f"{trace_id}-{i}" if trace_id else None
-        body = state.get("body", "") if isinstance(state, dict) else str(state)
-        result = await async_make_predict_request(body, questions, model=model, trace_id=tid)
-        if "error" in result:
-            return {"index": i, "state": state, "error": result["error"]}
-        return {"index": i, "state": state, "result": result}
+    semaphore = asyncio.Semaphore(max_concurrent)
 
-    sem = asyncio.Semaphore(concurrency)
+    async def _make_request(state: dict) -> dict[str, Any]:
+        async with semaphore:
+            return await async_make_predict_request(
+                state.get("body", str(state)),
+                questions,
+            )
 
-    async def _bounded(i: int, state: dict) -> dict[str, Any]:
-        async with sem:
-            return await _one(i, state)
-
-    tasks = [_bounded(i, s) for i, s in enumerate(states)]
+    tasks = [_make_request(state) for state in states]
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    # 处理异常结果
-    processed = []
-    for r in results:
-        if isinstance(r, Exception):
-            processed.append({"index": 0, "state": {}, "error": str(r)})
+    # Process results
+    processed_results = []
+    for i, result in enumerate(results):
+        if isinstance(result, Exception):
+            logger.error("async_batch_task_error index=%d error=%s", i, result)
+            processed_results.append({"error": str(result)})
         else:
-            processed.append(r)
+            processed_results.append(result)
 
-    # 按 index 排序
-    processed.sort(key=lambda x: x.get("index", 0))
-
-    succeeded = [r for r in processed if "error" not in r]
-    errors = [r for r in processed if "error" in r]
-
-    return {
-        "results": succeeded,
-        "errors": errors,
-        "progress": {
-            "total": len(states),
-            "succeeded": len(succeeded),
-            "failed": len(errors),
-        },
-    }
+    return {"results": processed_results, "total": len(states)}

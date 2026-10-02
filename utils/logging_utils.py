@@ -1,73 +1,65 @@
 """
-结构化日志工具
-==============
-使用 structlog 提供带 trace_id 的结构化日志
+Logging Utilities
+=================
+Structured logging with JSON output and trace_id support
 
-使用方式：
-    from logging_utils import get_logger
-    logger = get_logger()
-    logger.info("request_completed", trace_id="abc123", duration_ms=42)
+Usage:
+    from logging_utils import setup_logging, get_logger
+    logger = get_logger(__name__)
+    logger.info("message", extra_data="value")
 """
 
 from __future__ import annotations
 
 import logging
-import uuid
-from functools import lru_cache
+import structlog
 from typing import Any
 
-import structlog
 
-from config.config import get_settings
+def setup_logging(
+    level: str = "INFO",
+    fmt: str = "json",
+) -> None:
+    """Setup structured logging
 
+    Args:
+        level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        fmt: Log format (json, text)
+    """
+    log_level = getattr(logging, level.upper(), logging.INFO)
 
-@lru_cache(maxsize=1)
-def setup_logging() -> None:
-    """根据配置初始化日志系统（幂等）"""
-    settings = get_settings()
-    log_level = getattr(logging, settings.logging.level.upper(), logging.INFO)
-    use_json = settings.logging.format == "json"
-
-    structlog.configure(
-        processors=[
-            structlog.contextvars.merge_contextvars,
-            structlog.processors.add_log_level_name,
-            structlog.processors.StackInfoRenderer(),
-            structlog.dev.set_exc_info,
-            structlog.processors.TimeStamper(fmt="%Y-%m-%dT%H:%M:%S.%000z", utc=False),
-            (
-                structlog.processors.JSONRenderer()
-                if use_json
-                else structlog.dev.ConsoleRenderer()
-            ),
-        ],
-        wrapper_class=structlog.make_filtering_bound_logger(log_level),
-        context_class=dict,
-        logger_factory=structlog.PrintLoggerFactory(),
-        cache_logger_on_first_use=True,
-    )
-
-
-def get_logger(extra: dict[str, Any] | None = None) -> structlog.BoundLogger:
-    """获取带可选附加字段的结构化日志器"""
-    return structlog.get_logger() | structlog.contextvars.make_filtering_bound_logger(
-        logging.DEBUG
-    ) if extra else structlog.get_logger()
+    if fmt == "json":
+        structlog.configure(
+            processors=[
+                structlog.contextvars.merge_contextvars,
+                structlog.processors.add_log_level,
+                structlog.processors.StackInfoRenderer(),
+                structlog.dev.set_exc_info,
+                structlog.processors.TimeStamper(fmt="iso"),
+                structlog.processors.JSONRenderer(),
+            ],
+            wrapper_class=structlog.make_filtering_bound_logger(log_level),
+            context_class=dict,
+            logger_factory=structlog.PrintLoggerFactory(),
+            cache_logger_on_first_use=True,
+        )
+    else:
+        logging.basicConfig(
+            level=log_level,
+            format="%(asctime)s [%(levelname)s] %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
 
 
-def inject_trace_id(logger: structlog.BoundLogger | None = None) -> str:
-    """生成并注入 trace_id 到当前上下文，返回 trace_id 字符串"""
-    import structlog.contextvars
+def get_logger(name: str) -> Any:
+    """Get logger instance
 
-    trace_id = uuid.uuid4().hex[:8]
-    structlog.contextvars.bind_contextvars(trace_id=trace_id)
-    if logger:
-        logger.info("trace_started", trace_id=trace_id)
-    return trace_id
+    Args:
+        name: Logger name (usually __name__)
 
-
-def clear_trace() -> None:
-    """清除当前上下文中的 trace_id（用于测试）"""
-    import structlog.contextvars
-
-    structlog.contextvars.clear_contextvars()
+    Returns:
+        Logger instance
+    """
+    if logging.root.manager.loggerDict.get(name):
+        return logging.getLogger(name)
+    return structlog.get_logger(name)
