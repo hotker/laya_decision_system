@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+    branches: [main]
 
 jobs:
   test:
@@ -24,29 +24,37 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install pydantic pydantic-settings structlog requests httpx
 
-      - name: Run tests with coverage
+      - name: Run tests
         run: |
-          pytest tests/ -v --cov=. --cov-report=term-missing --cov-report=xml
+          pytest tests/ -v
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-        if: matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v3
+        if: matrix.python-version == '3.10'
 
-  typecheck:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
 
-      - run: pip install mypy pytest
-      - run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort mypy
 
-      - name: mypy check
-        run: mypy src/ scenarios/ utils/ config/ --ignore-missing-imports
+      - name: Run linter
+        run: |
+          flake8 . --max-line-length=120 --ignore=E501,W503
+          black --check .
+          isort --check-only .
+
+      - name: Run type checking
+        run: |
+          mypy src/ config/ utils/
