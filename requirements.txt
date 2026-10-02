@@ -1,0 +1,18 @@
+# Laya AI 决策系统 — 依赖
+# ========================
+
+# HTTP 客户端
+requests>=2.31.0          # 同步 HTTP 请求
+httpx>=0.25.0             # 异步 HTTP 请求（可选，pip install httpx）
+
+# 配置 & 校验
+pydantic>=2.5.0           # 数据校验
+pydantic-settings>=2.1.0  # 环境变量配置
+
+# 日志
+structlog>=23.2.0         # 结构化日志
+
+# 开发依赖
+pytest>=7.4.0             # 单元测试
+pytest-asyncio>=0.23.0    # 异步测试支持
+pytest-cov>=4.1.0         # 覆盖率

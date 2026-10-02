@@ -1,0 +1,119 @@
+{
+  "batch_results": [
+    {
+      "index": 1,
+      "state": {
+        "body": "产品很好，物流很快，客服态度也不错"
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "choice": "positive",
+          "probabilities": {
+            "positive": 0.9828,
+            "negative": 0.0018,
+            "neutral": 0.0154
+          },
+          "confidence": 0.9156,
+          "answer_confidence": 0.9828,
+          "action": {
+            "act_probability": 1.0
+          }
+        }
+      },
+      "confidence": 0
+    },
+    {
+      "index": 2,
+      "state": {
+        "body": "质量太差了，用了两天就坏了，退货"
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "choice": "negative",
+          "probabilities": {
+            "positive": 0.0002,
+            "negative": 0.9997,
+            "neutral": 0.0002
+          },
+          "confidence": 0.997,
+          "answer_confidence": 0.9997,
+          "action": {
+            "act_probability": 1.0
+          }
+        }
+      },
+      "confidence": 0
+    },
+    {
+      "index": 3,
+      "state": {
+        "body": "价格实惠，性价比高，值得购买"
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "choice": "positive",
+          "probabilities": {
+            "positive": 0.9945,
+            "negative": 0.0005,
+            "neutral": 0.005
+          },
+          "confidence": 0.9674,
+          "answer_confidence": 0.9945,
+          "action": {
+            "act_probability": 1.0
+          }
+        }
+      },
+      "confidence": 0
+    },
+    {
+      "index": 4,
+      "state": {
+        "body": "包装很好，没有破损，五星好评"
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "choice": "positive",
+          "probabilities": {
+            "positive": 0.9858,
+            "negative": 0.0019,
+            "neutral": 0.0122
+          },
+          "confidence": 0.9273,
+          "answer_confidence": 0.9858,
+          "action": {
+            "act_probability": 1.0
+          }
+        }
+      },
+      "confidence": 0
+    },
+    {
+      "index": 5,
+      "state": {
+        "body": "物流太慢了，等了半个月才到，体验很差"
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "choice": "negative",
+          "probabilities": {
+            "positive": 0.0002,
+            "negative": 0.9996,
+            "neutral": 0.0003
+          },
+          "confidence": 0.9963,
+          "answer_confidence": 0.9996,
+          "action": {
+            "act_probability": 1.0
+          }
+        }
+      },
+      "confidence": 0
+    }
+  ]
+}

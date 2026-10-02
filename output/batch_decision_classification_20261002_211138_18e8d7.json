@@ -1,0 +1,52 @@
+{
+  "metadata": {
+    "system": "Laya AI 决策系统",
+    "version": "2.0.0",
+    "timestamp": "2026-10-02T21:11:38.544435",
+    "decision_type": "classification",
+    "count": 10,
+    "trace_id": null
+  },
+  "results": [
+    {
+      "review": "这个产品质量很好，做工精细，材质上乘",
+      "category": "quality"
+    },
+    {
+      "review": "价格太贵了，性价比不高，不值得购买",
+      "category": "price"
+    },
+    {
+      "review": "客服态度很好，物流也很快，安装师傅专业",
+      "category": "service"
+    },
+    {
+      "review": "智能功能很实用，操作简便，体验不错",
+      "category": "function"
+    },
+    {
+      "review": "外观设计简约大方，颜色很喜欢，放在家里很搭",
+      "category": "design"
+    },
+    {
+      "review": "商品收到有破损，客服处理及时，给了补偿",
+      "category": "service"
+    },
+    {
+      "review": "用了三个月了，没什么问题，质量可靠",
+      "category": "quality"
+    },
+    {
+      "review": "物流太慢了，等了半个月才到",
+      "category": "service"
+    },
+    {
+      "review": "产品功能强大，智能联动很方便",
+      "category": "function"
+    },
+    {
+      "review": "颜值很高，做工也不错，值得推荐",
+      "category": "quality"
+    }
+  ]
+}

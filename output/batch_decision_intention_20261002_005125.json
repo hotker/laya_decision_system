@@ -1,0 +1,44 @@
+{
+  "results": [
+    {
+      "message": "你们这个产品怎么使用？有说明书吗？",
+      "intent": "purchase"
+    },
+    {
+      "message": "产品坏了，怎么办？要维修吗？",
+      "intent": "inquiry"
+    },
+    {
+      "message": "我要下单，什么时候能发货？",
+      "intent": "purchase"
+    },
+    {
+      "message": "我想退货，可以吗？",
+      "intent": "after_sale"
+    },
+    {
+      "message": "产品质量很好，谢谢客服",
+      "intent": "praise"
+    },
+    {
+      "message": "物流太慢了，等了三天还没到",
+      "intent": "after_sale"
+    },
+    {
+      "message": "这个功能在哪里打开？",
+      "intent": "purchase"
+    },
+    {
+      "message": "我要退款，质量太差了",
+      "intent": "complaint"
+    },
+    {
+      "message": "推荐给你们的朋友，很好用",
+      "intent": "praise"
+    },
+    {
+      "message": "客服态度太差了，我要投诉",
+      "intent": "complaint"
+    }
+  ]
+}

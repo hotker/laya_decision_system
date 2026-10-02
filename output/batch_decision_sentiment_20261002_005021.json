@@ -1,0 +1,44 @@
+{
+  "results": [
+    {
+      "comment": "这个产品太棒了！质量超好，强烈推荐！",
+      "sentiment": "very_positive"
+    },
+    {
+      "comment": "挺好的，用了半个月没出问题",
+      "sentiment": "negative"
+    },
+    {
+      "comment": "一般般吧，没什么特别的感觉",
+      "sentiment": "negative"
+    },
+    {
+      "comment": "质量太差了，用了两天就坏了",
+      "sentiment": "negative"
+    },
+    {
+      "comment": "非常不满意，退货了，大家别买！",
+      "sentiment": "negative"
+    },
+    {
+      "comment": "价格实惠，性价比很高，值得购买",
+      "sentiment": "negative"
+    },
+    {
+      "comment": "包装很好，物流也快，五星好评",
+      "sentiment": "very_positive"
+    },
+    {
+      "comment": "客服态度好，处理问题及时",
+      "sentiment": "negative"
+    },
+    {
+      "comment": "产品功能强大，超出预期",
+      "sentiment": "negative"
+    },
+    {
+      "comment": "物流慢，客服回复不及时，体验差",
+      "sentiment": "negative"
+    }
+  ]
+}
