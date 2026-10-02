@@ -7,14 +7,14 @@ Configuration management package
 from __future__ import annotations
 
 from config.config import (
-    get_config,
-    get_settings,
-    get_server,
-    get_performance,
-    get_output,
+    DECISION_TYPES,
     SYSTEM_NAME,
     VERSION,
-    DECISION_TYPES,
+    get_config,
+    get_output,
+    get_performance,
+    get_server,
+    get_settings,
 )
 
 __all__ = [

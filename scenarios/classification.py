@@ -12,13 +12,13 @@ Usage:
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional
+from typing import Optional
 
 from utils.data_source import load_data
 from utils.http_client import make_predict_request
 from utils.output import save_results
 from utils.progress import ProgressBar
-from utils.validation import validate_state, validate_questions
+from utils.validation import validate_questions, validate_state
 
 logger = logging.getLogger(__name__)
 

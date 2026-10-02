@@ -5,9 +5,7 @@ Tests for plugin system
 
 from __future__ import annotations
 
-import pytest
-
-from utils.plugin import register, list_scenarios, get_all_scenario_names, get_scenario
+from utils.plugin import get_all_scenario_names, get_scenario, list_scenarios, register
 
 
 def dummy_run_func():

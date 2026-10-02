@@ -220,7 +220,7 @@ def make_batch_request(
         except ValueError as exc:
             return {"error": f"Invalid JSON response: {exc}"}
 
-    except requests.exceptions.Timeout as exc:
+    except requests.exceptions.Timeout:
         return {"error": f"Timeout after {timeout}s"}
     except requests.exceptions.ConnectionError as exc:
         return {"error": f"Connection error: {exc}"}

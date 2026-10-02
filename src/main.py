@@ -24,17 +24,14 @@ import argparse
 import logging
 import sys
 import time
-from pathlib import Path
-
-from config.config import DECISION_TYPES, SYSTEM_NAME, VERSION, get_config
-from utils.data_source import load_data, save_output
-from utils.http_client import check_health
-from utils.output import clean_all, clean_old_files, list_output_files
-from utils.plugin import get_all_scenario_names, list_scenarios, register_scenarios
-from utils.progress import ProgressBar
 
 # Import all scenario modules to trigger registration
 import scenarios  # noqa: F401
+from config.config import DECISION_TYPES, SYSTEM_NAME, VERSION, get_config
+from utils.data_source import load_data
+from utils.http_client import check_health
+from utils.output import clean_all, clean_old_files, list_output_files
+from utils.plugin import list_scenarios
 
 
 def show_menu() -> None:
@@ -339,7 +336,7 @@ Usage examples:
     else:
         # Interactive menu
         show_menu()
-        print(f"\nCurrently supported decision types:")
+        print("\nCurrently supported decision types:")
         for dtype, info in DECISION_TYPES.items():
             print(f"  • {info['name']}: {info['description']}")
 

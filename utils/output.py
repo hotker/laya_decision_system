@@ -21,7 +21,6 @@ import logging
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from config.config import get_config
 

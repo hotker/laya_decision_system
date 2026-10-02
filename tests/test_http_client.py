@@ -7,12 +7,10 @@ from __future__ import annotations
 
 from unittest.mock import Mock, patch
 
-import pytest
-
 from utils.http_client import (
-    make_predict_request,
-    make_batch_request,
     check_health,
+    make_batch_request,
+    make_predict_request,
     reset_session,
 )
 

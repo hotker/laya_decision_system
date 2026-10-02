@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from config.config import get_config, get_settings, Settings
+from config.config import Settings, get_config, get_settings
 
 
 class TestConfig:

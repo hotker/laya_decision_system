@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from utils.validation import validate_state, validate_questions, DecisionRequest
+from utils.validation import DecisionRequest, validate_questions, validate_state
 
 
 class TestValidateState:

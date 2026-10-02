@@ -12,8 +12,9 @@ Usage:
 from __future__ import annotations
 
 import logging
-import structlog
 from typing import Any
+
+import structlog
 
 
 def setup_logging(
