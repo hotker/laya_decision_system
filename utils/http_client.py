@@ -1,17 +1,17 @@
 """
-公共 HTTP 客户端
-================
-基于 requests / httpx 的标准化 Laya AI 服务通信
+Common HTTP Client
+===================
+Standardized Laya AI service communication based on requests/httpx
 
-功能：
-  - 同步 & 异步请求（自动检测 anyio 可用性）
-  - 指数退避重试（可配置次数/延迟/退避因子）
-  - 连接池管理
-  - 结构化 trace_id 注入
+Features:
+  - Synchronous & asynchronous requests (auto-detect anyio availability)
+  - Exponential backoff retry (configurable count/delay/backoff factor)
+  - Connection pool management
+  - Structured trace_id injection
 
-使用方式：
+Usage:
     from http_client import make_predict_request, make_batch_request
-    result = make_predict_request("文本内容", questions={...})
+    result = make_predict_request("text content", questions={...})
 """
 
 from __future__ import annotations
@@ -27,11 +27,11 @@ from config.config import get_config
 
 logger = logging.getLogger(__name__)
 
-# ─── 会话管理 ──────────────────────────────────────────────────
+# ─── Session Management ─────────────────────────────────────────
 
 
 def _build_session() -> requests.Session:
-    """构建带重试策略的 requests.Session"""
+    """Build requests.Session with retry policy"""
     cfg = get_config()
 
     retry = Retry(
@@ -50,7 +50,7 @@ def _build_session() -> requests.Session:
     return session
 
 
-# 全局会话（线程安全，复用连接池）
+# Global session (thread-safe, connection pool reuse)
 _session: requests.Session | None = None
 
 
@@ -61,7 +61,7 @@ def _get_session() -> requests.Session:
     return _session
 
 
-# ─── 同步请求 ──────────────────────────────────────────────────
+# ─── Synchronous Requests ───────────────────────────────────────
 
 
 def make_predict_request(
@@ -73,19 +73,19 @@ def make_predict_request(
     timeout: Optional[int] = None,
     trace_id: Optional[str] = None,
 ) -> dict[str, Any]:
-    """发送单条预测请求
+    """Send single prediction request
 
     Args:
-        state: 输入文本/状态
-        questions: 问题定义（分类标准、情感维度等）
-        model: 模型名称
-        task: 任务类型
-        lang: 语言代码
-        timeout: 超时秒数
-        trace_id: 追踪 ID
+        state: Input text/state
+        questions: Question definition (classification criteria, sentiment dimensions, etc.)
+        model: Model name
+        task: Task type
+        lang: Language code
+        timeout: Timeout in seconds
+        trace_id: Trace ID
 
     Returns:
-        服务响应字典，失败时返回 {"error": str}
+        Service response dict, returns {"error": str} on failure
     """
     cfg = get_config()
     base_url = cfg.server.base_url
@@ -111,14 +111,14 @@ def make_predict_request(
         logger.debug("predict_request url=%s trace_id=%s", url, trace_id)
         resp = session.post(url, json=payload, timeout=timeout)
 
-        # 检查 HTTP 状态
+        # Check HTTP status
         if resp.status_code != 200:
             logger.error(
                 "predict_http_error status=%d trace_id=%s", resp.status_code, trace_id
             )
             return {"error": f"HTTP {resp.status_code}: {resp.text[:200]}"}
 
-        # 解析 JSON
+        # Parse JSON
         try:
             result = resp.json()
             logger.debug(
@@ -152,19 +152,19 @@ def make_batch_request(
     timeout: Optional[int] = None,
     trace_id: Optional[str] = None,
 ) -> dict[str, Any]:
-    """发送批量预测请求
+    """Send batch prediction request
 
-    自动分块处理超过 MAX_BATCH_SIZE 的请求。
+    Auto-splits requests exceeding MAX_BATCH_SIZE.
 
     Args:
-        states: 状态列表，每个元素包含 "body" 等字段
-        questions: 问题定义
-        model: 模型名称
-        timeout: 超时秒数
-        trace_id: 追踪 ID
+        states: State list, each element contains "body" and other fields
+        questions: Question definition
+        model: Model name
+        timeout: Timeout in seconds
+        trace_id: Trace ID
 
     Returns:
-        包含 "results" 列表的字典，失败时返回 {"error": str}
+        Dict containing "results" list, returns {"error": str} on failure
     """
     cfg = get_config()
     max_batch = cfg.performance.max_batch_size
@@ -175,7 +175,7 @@ def make_batch_request(
     timeout = timeout or cfg.performance.request_timeout
     model = model or cfg.server.model
 
-    # 自动分块
+    # Auto-split
     if len(states) > max_batch:
         logger.info(
             "batch_autosplit total=%d max=%d chunks=%d",
@@ -231,10 +231,10 @@ def make_batch_request(
 
 
 def check_health(base_url: Optional[str] = None) -> dict[str, Any]:
-    """检查 Laya 服务健康状态
+    """Check Laya service health status
 
     Returns:
-        {"status": "ok", ...} 或 {"status": "error", "message": str}
+        {"status": "ok", ...} or {"status": "error", "message": str}
     """
     cfg = get_config()
     target = base_url or cfg.server.base_url
@@ -254,7 +254,7 @@ def check_health(base_url: Optional[str] = None) -> dict[str, Any]:
 
 
 def reset_session() -> None:
-    """重置全局会话（主要用于测试）"""
+    """Reset global session (mainly for testing)"""
     global _session
     if _session:
         _session.close()
