@@ -70,25 +70,22 @@ class ProgressBar:
 
         # Format ETA
         if eta > 3600:
-            eta_str = f"{eta/3600:.1f}h"
+            eta_str = f"{eta / 3600:.1f}h"
         elif eta > 60:
-            eta_str = f"{eta/60:.1f}m"
+            eta_str = f"{eta / 60:.1f}m"
         else:
             eta_str = f"{eta:.1f}s"
 
-        # Format progress line
-        pct_str = f"{pct*100:5.1f}%"
-        rate_str = f"{rate:.1f}/s"
-        eta_str = ""
-        if eta > 3600:
-            eta_str = f"{eta/3600:.1f}h"
-        elif eta > 60:
-            eta_str = f"{eta/60:.1f}m"
-        else:
-            eta_str = f"{eta:.1f}s"
+        # Build the full line
+        line = "{} {} |{}| {:5.1f}% {} ETA {}".format(
+            self.desc,
+            bar,
+            f"{pct * 100:.1f}%",
+            f"{rate:.1f}/s",
+            eta_str,
+        )
 
-        line = "\r{} |{}| {} ETA {}  ".format(bar, pct_str, rate_str, eta_str)
-        sys.stdout.write(line.format(desc=self.desc, bar=line))
+        sys.stdout.write("\r" + line + " " * 20)
         sys.stdout.flush()
 
 

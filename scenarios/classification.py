@@ -1,5 +1,4 @@
-"""
-Intelligent Classification Scenario (Enhanced)
+"""Intelligent Classification Scenario (Enhanced)
 ==============================================
 Supports external data source input, structured logging output
 
@@ -31,11 +30,11 @@ def run_classification_example(data_source: Optional[str] = None) -> None:
     """
     print(
         """
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║        🧠 Laya AI Decision System — Intelligent Classification ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
+\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
+\u2551                                                              \u2551
+\u2551        \U0001f9a0 Laya AI Decision System \u2014 Intelligent Classification \u2551
+\u2551                                                              \u2551
+\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d
 """
     )
 
@@ -53,13 +52,11 @@ def run_classification_example(data_source: Optional[str] = None) -> None:
         }
     }
 
-    # Validation
     errors = validate_questions(questions)
     if errors:
         print(f"❌ Question definition validation failed: {'; '.join(errors)}")
         return
 
-    # Load data
     if data_source:
         items = load_data(data_source, text_column="body")
         if items is None:
@@ -68,7 +65,10 @@ def run_classification_example(data_source: Optional[str] = None) -> None:
     else:
         items = _default_reviews()
 
-    reviews = [{"body": item["body"]} if isinstance(item, dict) else {"body": item} for item in items]
+    reviews = [
+        {"body": item["body"]} if isinstance(item, dict) else {"body": item}
+        for item in items
+    ]
 
     print(f"\n📝 Starting classification decision ({len(reviews)} items)...")
     print("-" * 70)
@@ -78,10 +78,8 @@ def run_classification_example(data_source: Optional[str] = None) -> None:
         for i, review in enumerate(reviews):
             body = review["body"]
 
-            # Validate input
             state_errors = validate_state(body)
             if state_errors:
-                logger.warning("review %d validation failed: %s", i + 1, state_errors)
                 category = f"skipped({state_errors[0][:20]})"
             else:
                 result = make_predict_request(body, questions)
@@ -90,12 +88,11 @@ def run_classification_example(data_source: Optional[str] = None) -> None:
                     logger.warning("review %d HTTP error: %s", i + 1, result["error"])
                     category = f"error({result['error'][:20]})"
 
-            print(f"  {i+1:3d}. {body[:40]:<40} → {category:<10}")
+            print(f"  {i+1:<3d}. {body[:40]:<40} → {category:<10}")
             results.append({"review": body, "category": category})
             p.update(1)
 
-    # Statistics
-    _print_stats(results, "category", "📊 Classification Results Statistics")
+    _print_stats(results, "category")
 
     filename = save_results(results, prefix="classification", decision_type="classification")
     print(f"\n💾 Saved: {filename}")
@@ -116,9 +113,20 @@ def _default_reviews() -> list[str]:
     ]
 
 
-def _print_stats(results: list[dict], key: str, title: str) -> None:
-    """Print classification statistics"""
-    print(f"\n{title}")
+def _print_stats(results: list[dict], key: str = "category") -> None:
+    """Print classification statistics.
+
+    Args:
+        results: List of result dicts
+        key: The key to count by
+    """
+    if not results:
+        print("\n  No results to display")
+        return
+
+    print("\n" + "=" * 70)
+    title = f"📊 {key.title()} Results Statistics"
+    print(title)
     print("=" * 70)
     stats: dict[str, int] = {}
     for r in results:

@@ -1,5 +1,4 @@
-"""
-Sentiment Analysis Scenario (Enhanced)
+"""Sentiment Analysis Scenario (Enhanced)
 ======================================
 Supports external data source input, structured logging output
 
@@ -30,11 +29,11 @@ def run_sentiment_analysis(data_source: Optional[str] = None) -> None:
     """
     print(
         """
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║        🧠 Laya AI Decision System — Sentiment Analysis        ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
+\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
+\u2551                                                              \u2551
+\u2551        \U0001f9a0 Laya AI Decision System \u2014 Sentiment Analysis        \u2551
+\u2551                                                              \u2551
+\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d
 """
     )
 
@@ -65,7 +64,10 @@ def run_sentiment_analysis(data_source: Optional[str] = None) -> None:
     else:
         items = _default_comments()
 
-    comments = [{"body": item["body"]} if isinstance(item, dict) else {"body": item} for item in items]
+    comments = [
+        {"body": item["body"]} if isinstance(item, dict) else {"body": item}
+        for item in items
+    ]
 
     print(f"\n📝 Starting sentiment analysis ({len(comments)} items)...")
     print("-" * 70)
@@ -84,7 +86,7 @@ def run_sentiment_analysis(data_source: Optional[str] = None) -> None:
                 if result.get("error"):
                     sentiment = f"error({result['error'][:20]})"
 
-            print(f"  {i+1:3d}. {body[:40]:<40} → {sentiment:<15}")
+            print(f"  {i+1:<3d}. {body[:40]:<40} → {sentiment:<15}")
             results.append({"comment": body, "sentiment": sentiment})
             p.update(1)
 
@@ -110,6 +112,11 @@ def _default_comments() -> list[str]:
 
 
 def _print_stats(results: list[dict]) -> None:
+    """Print sentiment distribution statistics."""
+    if not results:
+        print("\n  No results to display")
+        return
+
     print("\n📊 Sentiment Distribution:")
     stats: dict[str, int] = {}
     for r in results:

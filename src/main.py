@@ -25,33 +25,31 @@ import logging
 import sys
 import time
 
-# Import all scenario modules to trigger registration
-import scenarios  # noqa: F401
-from config.config import DECISION_TYPES, SYSTEM_NAME, VERSION, get_config
+from config.config import SYSTEM_NAME, VERSION, get_config
 from utils.data_source import load_data
 from utils.http_client import check_health
 from utils.output import clean_all, clean_old_files, list_output_files
-from utils.plugin import list_scenarios
+from utils.plugin import get_scenario, list_scenarios
+
+# Import all scenario modules to trigger auto-registration
+import scenarios  # noqa: F401
 
 
 def show_menu() -> None:
     """Display main menu"""
+    scenarios_list = list_scenarios()
+    scenario_lines = ""
+    for idx, s in enumerate(scenarios_list, 1):
+        emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"][idx - 1] if idx <= 9 else f"{idx}️⃣"
+        scenario_lines += f"║  {emoji}  {s['title']:40s} ║\n"
+
     print(
-        """
-╔══════════════════════════════════════════════════════════════╗
+        f"""\n╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║        🧠 Laya AI Decision System v2.0                       ║
+║        🧠 Laya AI Decision System v{VERSION}                       ║
 ║                                                              ║
 ║  Modules:                                                    ║
-║                                                              ║
-║  1️⃣  Intelligent Classification — Text/comment auto-classify ║
-║  2️⃣  Sentiment Analysis — Emotion tendency recognition      ║
-║  3️⃣  Intent Recognition — User intent auto-recognition      ║
-║  4️⃣  Recommendation Decision — Personalized strategies      ║
-║  5️⃣  Risk Assessment — Risk level auto-scoring              ║
-║  6️⃣  Batch Processing — Batch decision analysis             ║
-║  7️⃣  Data Management — View/cleanup decision data           ║
-║  0️⃣  Exit System                                             ║
+{scenario_lines}║  0️⃣  Exit System                                             ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 """
@@ -96,39 +94,66 @@ def setup_logging() -> None:
 class DecisionSystem:
     """Decision system main controller"""
 
-    def __init__(self, data_source: str | None = None, output_format: str = "json"):
+    def __init__(
+        self,
+        data_source: str | None = None,
+        output_format: str = "json",
+    ):
         self.data_source = data_source
         self.output_format = output_format
 
+    def _run_scenario(self, scenario_name: str) -> None:
+        """Run a registered scenario dynamically."""
+        scenario = get_scenario(scenario_name)
+        if scenario is None:
+            # Try compound name variants
+            for suffix in ("_assessment", "_recommendation", "_recognition"):
+                compound = scenario_name + suffix
+                scenario = get_scenario(compound)
+                if scenario:
+                    break
+
+        if scenario is None:
+            print(f"❌ Unknown scenario: {scenario_name}")
+            print("Use --list to see available scenarios.")
+            return
+
+        func = scenario["run_func"]
+        if self.data_source:
+            func(data_source=self.data_source)
+        else:
+            func()
+
     def run_classification(self) -> None:
-        from scenarios.classification import run_classification_example
-        run_classification_example(self.data_source)
+        self._run_scenario("classification")
 
     def run_sentiment(self) -> None:
-        from scenarios.sentiment import run_sentiment_analysis
-        run_sentiment_analysis(self.data_source)
+        self._run_scenario("sentiment")
 
     def run_intention(self) -> None:
-        from scenarios.intention import run_intention_recognition
-        run_intention_recognition(self.data_source)
+        self._run_scenario("intention")
 
     def run_recommend(self) -> None:
-        from scenarios.recommendation import (
-            run_marketing_decision,
-            run_product_recommendation,
-        )
-        run_product_recommendation(self.data_source)
-        print("\n" + "=" * 70 + "\n")
-        run_marketing_decision(self.data_source)
+        # Product recommendation
+        self._run_scenario("recommend")
+        # Marketing strategy (aliased as "marketing")
+        scenario = get_scenario("marketing")
+        if scenario:
+            print("\n" + "=" * 70 + "\n")
+            func = scenario["run_func"]
+            if self.data_source:
+                func(data_source=self.data_source)
+            else:
+                func()
 
     def run_risk(self) -> None:
         from scenarios.risk import run_risk_assessment
-        run_risk_assessment()
+        run_risk_assessment(data_source=self.data_source)
 
     def run_batch(self) -> None:
         """Batch processing: use default data or external data source"""
         from utils.http_client import make_batch_request
-        from utils.output import save_results
+        from utils.output import save_results, save_results_csv
 
         print(
             """
@@ -149,7 +174,10 @@ class DecisionSystem:
         else:
             items = _default_batch_items()
 
-        states = [{"body": item["body"]} if isinstance(item, dict) else {"body": item} for item in items]
+        states = [
+            {"body": item["body"]} if isinstance(item, dict) else {"body": item}
+            for item in items
+        ]
 
         questions = {
             "sentiment": {
@@ -171,13 +199,24 @@ class DecisionSystem:
         elapsed = time.monotonic() - t0
 
         if result and "results" in result:
+            # Dynamically display all answer keys
+            all_keys = []
+            for item in result["results"]:
+                if "answers" in item:
+                    for k in item["answers"]:
+                        if k not in all_keys:
+                            all_keys.append(k)
+
             for i, item in enumerate(result["results"]):
                 answers = item.get("answers", {})
-                sentiment = answers.get("sentiment", {}).get("choice", "unknown")
-                confidence = item.get("confidence", 0)
                 body = states[i]["body"] if i < len(states) else ""
+                detail_parts = []
+                for key in all_keys:
+                    val = answers.get(key, {}).get("choice", "unknown")
+                    detail_parts.append(f"{key}={val}")
+                confidence = item.get("confidence", 0)
                 print(
-                    f"  {i+1}. {body[:40]:<40} {sentiment:<8} (Confidence: {confidence:.2f})"
+                    f"  {i+1}. {body[:40]:<40} {' '.join(detail_parts):<20} (Conf: {confidence:.2f})"
                 )
 
             # Collect results
@@ -192,11 +231,20 @@ class DecisionSystem:
                     }
                 )
 
-            filename = save_results(
-                results_data, prefix="batch_all", decision_type="batch"
-            )
+            # Save in selected format
+            if self.output_format == "csv":
+                filename = save_results_csv(results_data, prefix="batch_all")
+            else:
+                filename = save_results(
+                    results_data,
+                    prefix="batch_all",
+                    decision_type="batch",
+                )
             print(f"\n💾 Saved: {filename}")
-            print(f"⏱  Elapsed: {elapsed:.2f}s ({len(result['results'])} items, {elapsed/len(result['results'])*1000:.0f}ms/item)")
+            print(
+                f"⏱  Elapsed: {elapsed:.2f}s "
+                f"({len(result['results'])} items, {elapsed / max(len(result['results']), 1) * 1000:.0f}ms/item)"
+            )
         else:
             error_msg = result.get("error", "Unknown error")
             print(f"❌ Batch processing failed: {error_msg}")
@@ -297,7 +345,10 @@ Usage examples:
 
     args = parser.parse_args()
 
-    system = DecisionSystem(data_source=args.data, output_format=args.format)
+    system = DecisionSystem(
+        data_source=args.data,
+        output_format=args.format,
+    )
 
     # Health check
     if args.health:
@@ -320,47 +371,58 @@ Usage examples:
         print()
         sys.exit(0)
 
-    # Scenario routing
+    # Scenario routing via plugin
     if args.classification:
-        system.run_classification()
+        system._run_scenario("classification")
     elif args.sentiment:
-        system.run_sentiment()
+        system._run_scenario("sentiment")
     elif args.intention:
-        system.run_intention()
+        system._run_scenario("intention")
     elif args.recommend:
-        system.run_recommend()
+        system._run_scenario("recommend")
     elif args.risk:
-        system.run_risk()
+        system._run_scenario("risk")
     elif args.batch:
         system.run_batch()
     else:
         # Interactive menu
         show_menu()
-        print("\nCurrently supported decision types:")
-        for dtype, info in DECISION_TYPES.items():
-            print(f"  • {info['name']}: {info['description']}")
+        print("\nSelect a scenario by name or number, or use --<name> flag:")
+        for idx, s in enumerate(list_scenarios(), 1):
+            print(f"  {idx}. {s['name']:25s} {s['title']}")
 
         while True:
             try:
-                choice = input("\nSelect function [0-7]:").strip()
+                choice = input("\nEnter scenario name or number [0=exit]:").strip()
 
-                action_map = {
-                    "1": system.run_classification,
-                    "2": system.run_sentiment,
-                    "3": system.run_intention,
-                    "4": system.run_recommend,
-                    "5": system.run_risk,
-                    "6": system.run_batch,
-                    "7": system.run_data_management,
-                }
-
-                if choice in action_map:
-                    action_map[choice]()
-                elif choice == "0":
+                if choice == "0" or not choice:
                     print("\n👋 Thanks for using! Goodbye!")
                     break
+
+                scenarios_list = list_scenarios()
+                func = None
+
+                # Try name match first
+                scenario = get_scenario(choice)
+                if scenario:
+                    func = scenario["run_func"]
                 else:
-                    print("❌ Invalid selection, please try again")
+                    # Try number match
+                    try:
+                        idx = int(choice)
+                        if 1 <= idx <= len(scenarios_list):
+                            scenario = scenarios_list[idx - 1]
+                            func = scenario["run_func"]
+                    except ValueError:
+                        pass
+
+                if func:
+                    if system.data_source:
+                        func(data_source=system.data_source)
+                    else:
+                        func()
+                else:
+                    print(f"❌ Unknown scenario: {choice}. Use --list to see available options.")
 
             except KeyboardInterrupt:
                 print("\n\n⚠️  Interrupted by user")

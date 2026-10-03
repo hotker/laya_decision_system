@@ -1,5 +1,4 @@
-"""
-Recommendation Decision Scenario (Enhanced)
+"""Recommendation Decision Scenario (Enhanced)
 ============================================
 Product recommendation + marketing strategy, supports external data source
 
@@ -26,11 +25,11 @@ def run_product_recommendation(data_source: Optional[str] = None) -> None:
     """Run product recommendation decision"""
     print(
         """
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║        🧠 Laya AI Decision System — Product Recommendation    ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
+\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
+\u2551                                                              \u2551
+\u2551        \U0001f9a0 Laya AI Decision System \u2014 Product Recommendation    \u2551
+\u2551                                                              \u2551
+\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d
 """
     )
 
@@ -61,7 +60,10 @@ def run_product_recommendation(data_source: Optional[str] = None) -> None:
     else:
         items = _default_profiles()
 
-    profiles = [{"body": item["body"]} if isinstance(item, dict) else {"body": item} for item in items]
+    profiles = [
+        {"body": item["body"]} if isinstance(item, dict) else {"body": item}
+        for item in items
+    ]
 
     print(f"\n📝 Starting product recommendation decision ({len(profiles)} items)...")
     print("-" * 70)
@@ -80,7 +82,7 @@ def run_product_recommendation(data_source: Optional[str] = None) -> None:
                 if result.get("error"):
                     strategy = f"error({result['error'][:20]})"
 
-            print(f"  {i+1:3d}. {body[:40]:<40} → {strategy:<18}")
+            print(f"  {i+1:<3d}. {body[:40]:<40} → {strategy:<18}")
             results.append({"profile": body, "strategy": strategy})
             p.update(1)
 
@@ -94,11 +96,11 @@ def run_marketing_decision(data_source: Optional[str] = None) -> None:
     """Run marketing strategy decision"""
     print(
         """
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║        🧠 Laya AI Decision System — Marketing Strategy        ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
+\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
+\u2551                                                              \u2551
+\u2551        \U0001f9a0 Laya AI Decision System \u2014 Marketing Strategy        \u2551
+\u2551                                                              \u2551
+\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d
 """
     )
 
@@ -129,7 +131,10 @@ def run_marketing_decision(data_source: Optional[str] = None) -> None:
     else:
         items = _default_scenarios()
 
-    scenarios = [{"body": item["body"]} if isinstance(item, dict) else {"body": item} for item in items]
+    scenarios = [
+        {"body": item["body"]} if isinstance(item, dict) else {"body": item}
+        for item in items
+    ]
 
     print(f"\n📝 Starting marketing strategy decision ({len(scenarios)} items)...")
     print("-" * 70)
@@ -148,11 +153,11 @@ def run_marketing_decision(data_source: Optional[str] = None) -> None:
                 if result.get("error"):
                     strategy = f"error({result['error'][:20]})"
 
-            print(f"  {i+1:3d}. {body[:40]:<40} → {strategy:<18}")
+            print(f"  {i+1:<3d}. {body[:40]:<40} → {strategy:<18}")
             results.append({"scenario": body, "marketing_strategy": strategy})
             p.update(1)
 
-    _print_stats(results)
+    _print_stats(results, "marketing_strategy")
 
     filename = save_results(results, prefix="marketing", decision_type="marketing")
     print(f"\n💾 Saved: {filename}")
@@ -178,10 +183,19 @@ def _default_scenarios() -> list[str]:
     ]
 
 
-def _print_stats(results: list[dict]) -> None:
-    print("\n📊 Strategy Distribution:")
+def _print_stats(results: list[dict], key: str = "strategy") -> None:
+    """Print strategy distribution statistics.
+
+    Args:
+        results: List of result dicts
+        key: The key to count by (strategy or marketing_strategy)
+    """
+    if not results:
+        print("\n  No results to display")
+        return
+
+    print(f"\n📊 Strategy Distribution:")
     stats: dict[str, int] = {}
-    key = "strategy" if "strategy" in results[0] else "marketing_strategy"
     for r in results:
         s = r.get(key, "unknown")
         stats[s] = stats.get(s, 0) + 1

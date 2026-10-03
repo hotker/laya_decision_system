@@ -1,5 +1,4 @@
-"""
-Intent Recognition Scenario (Enhanced)
+"""Intent Recognition Scenario (Enhanced)
 ======================================
 Supports external data source input
 
@@ -26,11 +25,11 @@ def run_intention_recognition(data_source: Optional[str] = None) -> None:
     """Run intent recognition decision"""
     print(
         """
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║        🧠 Laya AI Decision System — Intent Recognition        ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
+\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
+\u2551                                                              \u2551
+\u2551        \U0001f9a0 Laya AI Decision System \u2014 Intent Recognition        \u2551
+\u2551                                                              \u2551
+\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d
 """
     )
 
@@ -61,7 +60,10 @@ def run_intention_recognition(data_source: Optional[str] = None) -> None:
     else:
         items = _default_messages()
 
-    messages = [{"body": item["body"]} if isinstance(item, dict) else {"body": item} for item in items]
+    messages = [
+        {"body": item["body"]} if isinstance(item, dict) else {"body": item}
+        for item in items
+    ]
 
     print(f"\n📝 Starting intent recognition ({len(messages)} items)...")
     print("-" * 70)
@@ -80,7 +82,7 @@ def run_intention_recognition(data_source: Optional[str] = None) -> None:
                 if result.get("error"):
                     intent = f"error({result['error'][:20]})"
 
-            print(f"  {i+1:3d}. {body[:40]:<40} → {intent:<15}")
+            print(f"  {i+1:<3d}. {body[:40]:<40} → {intent:<15}")
             results.append({"message": body, "intent": intent})
             p.update(1)
 
@@ -106,6 +108,11 @@ def _default_messages() -> list[str]:
 
 
 def _print_stats(results: list[dict]) -> None:
+    """Print intent distribution statistics."""
+    if not results:
+        print("\n  No results to display")
+        return
+
     print("\n📊 Intent Distribution:")
     stats: dict[str, int] = {}
     for r in results:

@@ -159,7 +159,7 @@ def make_batch_request(
 ) -> dict[str, Any]:
     """Send batch prediction request
 
-    Auto-splits requests exceeding MAX_BATCH_SIZE.
+    Auto-splits requests exceeding MAX_BATCH_SIZE (iterative, no recursion).
 
     Args:
         states: State list, each element contains "body" and other fields
@@ -180,59 +180,52 @@ def make_batch_request(
     timeout = timeout or cfg.performance.request_timeout
     model = model or cfg.server.model
 
-    # Auto-split
-    if len(states) > max_batch:
-        logger.info(
-            "batch_autosplit total=%d max=%d chunks=%d",
-            len(states),
-            max_batch,
-            (len(states) + max_batch - 1) // max_batch,
+    # Iterative chunking — no recursion, safe for any batch size
+    results: list[dict] = []
+    offset = 0
+    while offset < len(states):
+        chunk = states[offset : offset + max_batch]
+        chunk_size = len(chunk)
+
+        payload: dict[str, Any] = {
+            "states": chunk,
+            "questions": questions,
+            "model": model,
+        }
+        if trace_id:
+            payload["trace_id"] = trace_id
+
+        logger.debug(
+            "batch_request url=%s offset=%d count=%d trace_id=%s",
+            url,
+            offset,
+            chunk_size,
+            trace_id,
         )
-        results: list[dict] = []
-        for i in range(0, len(states), max_batch):
-            chunk = states[i : i + max_batch]
-            chunk_result = make_batch_request(
-                chunk, questions, model, timeout, trace_id
-            )
-            if "error" in chunk_result:
-                return chunk_result
-            results.extend(chunk_result.get("results", []))
-        return {"results": results}
-
-    payload: dict[str, Any] = {
-        "states": states,
-        "questions": questions,
-        "model": model,
-    }
-    if trace_id:
-        payload["trace_id"] = trace_id
-
-    try:
-        logger.debug("batch_request url=%s count=%d trace_id=%s", url, len(states), trace_id)
-        resp = session.post(url, json=payload, timeout=timeout)
-
-        if resp.status_code != 200:
-            return {"error": f"HTTP {resp.status_code}: {resp.text[:200]}"}
-
         try:
-            result = resp.json()
-            logger.debug(
-                "batch_response trace_id=%s count=%d",
-                trace_id,
-                len(result.get("results", [])),
-            )
-            return result
-        except ValueError as exc:
-            return {"error": f"Invalid JSON response: {exc}"}
+            resp = session.post(url, json=payload, timeout=timeout)
 
-    except requests.exceptions.Timeout:
-        return {"error": f"Timeout after {timeout}s"}
-    except requests.exceptions.ConnectionError as exc:
-        return {"error": f"Connection error: {exc}"}
-    except requests.exceptions.RequestException as exc:
-        return {"error": str(exc)}
-    except Exception as exc:
-        return {"error": str(exc)}
+            if resp.status_code != 200:
+                return {"error": f"HTTP {resp.status_code}: {resp.text[:200]}"}
+
+            try:
+                result = resp.json()
+                results.extend(result.get("results", []))
+            except ValueError as exc:
+                return {"error": f"Invalid JSON response: {exc}"}
+
+        except requests.exceptions.Timeout:
+            return {"error": f"Timeout after {timeout}s"}
+        except requests.exceptions.ConnectionError as exc:
+            return {"error": f"Connection error: {exc}"}
+        except requests.exceptions.RequestException as exc:
+            return {"error": str(exc)}
+        except Exception as exc:
+            return {"error": str(exc)}
+
+        offset += chunk_size
+
+    return {"results": results}
 
 
 def check_health(base_url: Optional[str] = None) -> dict[str, Any]:

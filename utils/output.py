@@ -48,20 +48,43 @@ def _gen_filename(prefix: str) -> str:
 # ─── Saving ─────────────────────────────────────────────────────
 
 
+def _flatten_value(val: object) -> object:
+    """Flatten nested structures for CSV export."""
+    if isinstance(val, dict):
+        return json.dumps(val, ensure_ascii=False, default=str)
+    if isinstance(val, (list, tuple)):
+        return json.dumps(val, ensure_ascii=False, default=str)
+    return val
+
+
 def save_results(
     results: list[dict],
     prefix: str = "decision",
     decision_type: str | None = None,
     trace_id: str | None = None,
+    fmt: str = "json",
 ) -> str:
-    """Save batch results as unified JSON format
+    """Save batch results as unified format
 
     Format:
     {
       "metadata": { ... },
       "results": [ ... ]
     }
+
+    Args:
+        results: Result data list
+        prefix: Filename prefix
+        decision_type: Category label for metadata
+        trace_id: Trace ID for tracking
+        fmt: Output format ('json' or 'csv')
+
+    Returns:
+        Path to the saved file
     """
+    if fmt == "csv":
+        return save_results_csv(results, prefix=prefix)
+
     cfg = get_config()
     path = _gen_filename(f"batch_decision_{prefix}")
 
@@ -92,8 +115,12 @@ def save_single_result(
     prefix: str = "decision",
     decision_type: str | None = None,
     trace_id: str | None = None,
+    fmt: str = "json",
 ) -> str:
     """Save single result as unified JSON format"""
+    if fmt == "csv":
+        return save_results_csv([result], prefix=prefix)
+
     cfg = get_config()
     path = _gen_filename(prefix)
 
@@ -154,6 +181,11 @@ def save_results_csv(
         logger.warning("save_csv_empty after flattening")
         return path
 
+    # Flatten nested structures for CSV compatibility
+    for row in flat:
+        for key, val in row.items():
+            row[key] = _flatten_value(val)
+
     fields = list(flat[0].keys())
     try:
         with open(path, "w", encoding="utf-8-sig", newline="") as f:
@@ -162,7 +194,7 @@ def save_results_csv(
             writer.writerows(flat)
         logger.info("csv_saved path=%s rows=%d", path, len(flat))
     except OSError as exc:
-        logger.error("save_csv_failed path=%s error=%s", path, exc)
+        logger.error("save_csv_failed path=%s error=%s", exc)
         raise
 
     return path

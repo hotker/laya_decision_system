@@ -75,13 +75,17 @@ class BatchRequest(BaseModel):
 
 
 def validate_state(text: str) -> list[str]:
-    """Validate input text
+    """Validate input text independently of questions.
 
     Returns:
         Error list, empty means passed
     """
     try:
-        DecisionRequest(state=text, questions={"__dummy__": {"type": "choice", "instructions": "dummy", "criteria": {"a": "b"}}})
+        state = text.strip()
+        if not state:
+            return ["state cannot be empty after stripping"]
+        if len(state) > 10000:
+            return ["state length exceeds 10000 characters"]
         return []
     except Exception as exc:
         return [str(exc)]

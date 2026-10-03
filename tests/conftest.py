@@ -28,7 +28,7 @@ def _reset_all():
     try:
         import utils.plugin
 
-        utils.plugin._SCENARIOS.clear()
+        utils.plugin.reset()
     except Exception:
         pass
 

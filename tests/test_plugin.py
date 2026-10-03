@@ -1,11 +1,10 @@
-"""
-Tests for plugin system
+"""Tests for plugin system
 ========================
 """
 
 from __future__ import annotations
 
-from utils.plugin import get_all_scenario_names, get_scenario, list_scenarios, register
+from utils.plugin import get_all_scenario_names, get_scenario, list_scenarios, register, reset
 
 
 def dummy_run_func():
@@ -18,9 +17,7 @@ class TestPluginSystem:
 
     def test_register_scenario(self):
         """Test registering a scenario"""
-        # Clear existing scenarios
-        from utils.plugin import _scenarios
-        _scenarios.clear()
+        reset()
 
         register("test_scenario", "Test Scenario", "test", dummy_run_func)
 
@@ -31,17 +28,24 @@ class TestPluginSystem:
 
     def test_get_all_scenario_names(self):
         """Test getting all scenario names"""
+        reset()
+        register("test_scenario", "Test Scenario", "test", dummy_run_func)
+
         names = get_all_scenario_names()
         assert isinstance(names, list)
         assert "test_scenario" in names
 
     def test_get_scenario_by_name(self):
         """Test getting scenario by name"""
+        reset()
+        register("test_scenario", "Test Scenario", "test", dummy_run_func)
+
         scenario = get_scenario("test_scenario")
         assert scenario is not None
         assert scenario["name"] == "test_scenario"
 
     def test_get_nonexistent_scenario(self):
         """Test getting non-existent scenario"""
+        reset()
         scenario = get_scenario("nonexistent")
         assert scenario is None

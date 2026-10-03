@@ -154,60 +154,94 @@ def get_output() -> OutputConfig:
     return get_settings().output
 
 
-# ─── Backward Compatible Dictionaries (for legacy code) ─────────
+# ─── Backward Compatible Accessors (for legacy code) ────────────
+# These provide dictionary-style access to settings. New code should
+# use get_config().server / .performance / .output / .logging directly.
 
-LAYA_CONFIG: dict = {
-    "BASE_URL": "http://localhost:8000",
-    "PREDICT_URL": "http://localhost:8000/predict",
-    "BATCH_URL": "http://localhost:8000/predict/batch",
-    "HEALTH_URL": "http://localhost:8000/health",
-    "TIMEOUT": 30,
-    "MODEL": "multilingual",
-    "TASK": None,
-    "LANG": None,
-}
 
-DECISION_TYPES: dict = {
-    "classification": {
-        "name": "Intelligent Classification",
-        "description": "Automatic classification of text/comments/content",
-        "use_cases": ["Customer review classification", "Ticket auto-assignment", "Content moderation", "Email classification"],
-    },
-    "sentiment": {
-        "name": "Sentiment Analysis",
-        "description": "Automatic sentiment tendency recognition",
-        "use_cases": ["Product review analysis", "Public opinion monitoring", "Brand reputation analysis", "User feedback analysis"],
-    },
-    "intention": {
-        "name": "Intent Recognition",
-        "description": "Automatic user intent recognition",
-        "use_cases": ["Customer service intent recognition", "Search intent analysis", "Marketing intent judgment", "Requirement understanding"],
-    },
-    "risk": {
-        "name": "Risk Assessment",
-        "description": "Automatic risk level scoring",
-        "use_cases": ["Credit risk assessment", "Fraud detection", "Compliance review", "Security alerts"],
-    },
-    "recommendation": {
-        "name": "Recommendation Decision",
-        "description": "Personalized recommendation and strategy formulation",
-        "use_cases": ["Product recommendation", "Marketing strategy formulation", "Personalized push", "Content recommendation"],
-    },
-}
+def _build_decision_types() -> dict:
+    """Build DECISION_TYPES from registered scenarios and static definitions."""
+    from utils.plugin import list_scenarios
 
-OUTPUT_CONFIG: dict = {
-    "DIR": Path("./output"),
-    "FORMATS": ["json", "csv"],
-    "KEEP_DAYS": 30,
-    "MAX_FILES": 100,
-    "system_name": SYSTEM_NAME,
-    "version": VERSION,
-}
+    result: dict = {}
+    for s in list_scenarios():
+        result[s["decision_type"]] = {
+            "name": s["title"],
+            "description": f"Managed by {s['name']} scenario",
+            "use_cases": [],
+        }
+    # Fallback static definitions for scenarios not yet auto-registered
+    fallback = {
+        "classification": {
+            "name": "Intelligent Classification",
+            "description": "Automatic classification of text/comments/content",
+            "use_cases": ["Customer review classification", "Ticket auto-assignment"],
+        },
+        "sentiment": {
+            "name": "Sentiment Analysis",
+            "description": "Automatic sentiment tendency recognition",
+            "use_cases": ["Product review analysis", "Public opinion monitoring"],
+        },
+        "intention": {
+            "name": "Intent Recognition",
+            "description": "Automatic user intent recognition",
+            "use_cases": ["Customer service intent recognition", "Search intent analysis"],
+        },
+        "risk": {
+            "name": "Risk Assessment",
+            "description": "Automatic risk level scoring",
+            "use_cases": ["Credit risk assessment", "Fraud detection"],
+        },
+        "recommendation": {
+            "name": "Recommendation Decision",
+            "description": "Personalized recommendation and strategy formulation",
+            "use_cases": ["Product recommendation", "Marketing strategy formulation"],
+        },
+    }
+    result.update(fallback)
+    return result
 
-PERFORMANCE_CONFIG: dict = {
-    "MAX_BATCH_SIZE": 100,
-    "MAX_CONCURRENT_REQUESTS": 5,
-    "REQUEST_TIMEOUT": 60,
-    "RETRY_TIMES": 3,
-    "RETRY_DELAY": 1.0,
-}
+
+DECISION_TYPES: dict = _build_decision_types()
+
+
+OUTPUT_CONFIG: dict = {}
+
+
+def _build_output_config() -> dict:
+    cfg = get_output()
+    return {
+        "DIR": cfg.directory,
+        "FORMATS": cfg.formats,
+        "KEEP_DAYS": cfg.keep_days,
+        "MAX_FILES": cfg.max_files,
+        "system_name": get_settings().system_name,
+        "version": get_settings().version,
+    }
+
+
+def get_output_config() -> dict:
+    return _build_output_config()
+
+
+PERFORMANCE_CONFIG: dict = {}
+
+
+def _build_performance_config() -> dict:
+    cfg = get_performance()
+    return {
+        "MAX_BATCH_SIZE": cfg.max_batch_size,
+        "MAX_CONCURRENT_REQUESTS": cfg.max_concurrent_requests,
+        "REQUEST_TIMEOUT": cfg.request_timeout,
+        "RETRY_TIMES": cfg.retry_times,
+        "RETRY_DELAY": cfg.retry_delay,
+    }
+
+
+def get_performance_config() -> dict:
+    return _build_performance_config()
+
+
+# Convenience alias for direct access (eager evaluation at module load)
+OUTPUT_CONFIG.update(_build_output_config())
+PERFORMANCE_CONFIG.update(_build_performance_config())
