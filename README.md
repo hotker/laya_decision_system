@@ -1,4 +1,4 @@
-# 🧠 Laya AI Decision System v2.0
+# 🧠 Laya AI Decision System v2.1
 
 > A Universal Intelligent Decision Platform Based on Laya AI Decision Engine
 
@@ -20,28 +20,28 @@ This system is a universal intelligent decision platform based on the **Laya AI*
 | **Python 3.10+** | Modern type annotations |
 | **Laya AI** | AI decision engine (multi-language support) |
 | **requests** | Synchronous HTTP with auto-retry + exponential backoff |
-| **httpx** | Asynchronous HTTP for high-concurrency batch processing (optional) |
+| **httpx** | Asynchronous HTTP with connection pooling + retry |
 | **pydantic** | Data validation + environment variable configuration |
 | **structlog** | Structured JSON logging |
 
 ---
 
-## 🆕 v2.0 Updates
+## 🆕 v2.1 Updates
 
 | # | Improvement | Description |
 |---|------|------|
-| 1 | HTTP Retry | `requests` + `Retry` auto-retry for 429/5xx |
-| 2 | Async Client | `httpx` high-concurrency `async_batch_concurrent()` |
-| 3 | Structured Logging | `structlog` JSON output + trace_id |
-| 4 | Input Validation | `pydantic` request parameter validation |
-| 5 | Environment Config | `LAYA_BASE_URL` overrides, `.env` support |
-| 6 | External Data Source | `--data file.json/.csv/-` |
-| 7 | Unified Output | `{"metadata": {...}, "results": [...]}` |
-| 8 | Progress Bar | Real-time `Classification |████| 30% 1.2/s ETA 5.0s` |
-| 9 | Risk Assessment | New scenario added |
-| 10 | Plugin Architecture | Automatic scene registration, no need to modify main.py |
-| 11 | CSV Output | `--format csv` |
-| 12 | Complete Testing | pytest + coverage |
+| 1 | **Plugin Auto-Discovery** | True automatic scenario registration via `scenarios/` directory scanning, no manual `main.py` mapping needed |
+| 2 | **Async Connection Pooling** | Persistent `httpx.AsyncClient` with connection pooling (was creating/closing per request) |
+| 3 | **Async Retry** | Exponential backoff retry for 429/5xx errors (was missing) |
+| 4 | **Batch Iterative Chunking** | Replaced recursive batch splitting with safe iterative loop (no stack overflow risk) |
+| 5 | **ProgressBar Fix** | Fixed infinite loop bug in terminal rendering |
+| 6 | **Unified `--data` Support** | All scenarios (incl. risk) now support external data files |
+| 7 | **Dynamic Batch Output** | Batch mode now displays all answer dimensions from response |
+| 8 | **CSV Format Support** | `save_results(fmt="csv")` safely flattens nested structures |
+| 9 | **Clean Config API** | Removed legacy dicts, unified access via `get_config()` |
+| 10 | **Plugin Reset API** | `plugin.reset()` for clean test isolation |
+| 11 | **Empty Results Safety** | All `_print_stats()` helpers guard against empty result lists |
+| 12 | **Decoupled Validation** | `validate_state()` independent of `DecisionRequest` model |
 
 ---
 
@@ -96,12 +96,12 @@ python src/main.py --batch            # Batch processing
 
 ```bash
 # Build
-docker build -t laya-decision:v2 .
+docker build -t laya-decision:v2.1 .
 
 # Run
 docker run -it --rm \
   -e LAYA_BASE_URL=http://laya-server:8000 \
-  laya-decision:v2 --classification
+  laya-decision:v2.1 --classification
 ```
 
 ---
@@ -111,33 +111,36 @@ docker run -it --rm \
 ```
 laya_decision_system/
 ├── src/                          # Core entry
-│   └── main.py                   # CLI main program
-├── scenarios/                    # Decision scenarios (auto-registration)
-│   ├── __init__.py
+│   └── main.py                   # CLI main program (plugin-driven routing)
+├── scenarios/                    # Decision scenarios (auto-registered)
+│   ├── __init__.py               # Auto-discovery + CLI alias registration
 │   ├── classification.py         # Intelligent classification
 │   ├── sentiment.py              # Sentiment analysis
 │   ├── intention.py              # Intent recognition
-│   ├── recommendation.py         # Recommendation decision
+│   ├── recommendation.py         # Product recommendation + marketing strategy
 │   └── risk.py                   # Risk assessment
 ├── config/                       # Configuration
-│   └── config.py                 # pydantic-settings model
+│   └── config.py                 # pydantic-settings model (unified API)
 ├── utils/                        # Utility modules
-│   ├── http_client.py            # Sync HTTP (requests + retry)
-│   ├── async_http_client.py      # Async HTTP (httpx)
-│   ├── validation.py             # Input validation
-│   ├── output.py                 # Output management
-│   ├── data_source.py            # Data source loading
+│   ├── http_client.py            # Sync HTTP (requests + retry + session pool)
+│   ├── async_http_client.py      # Async HTTP (httpx + pooling + retry)
+│   ├── validation.py             # Input validation (independent state checks)
+│   ├── output.py                 # Output management (JSON/CSV with safe flatten)
+│   ├── data_source.py            # Data source loading (JSON/CSV/stdin)
 │   ├── logging_utils.py          # Structured logging
-│   ├── plugin.py                 # Scene plugin system
-│   └── progress.py               # Progress bar
-├── tests/                        # Tests
+│   ├── plugin.py                 # Plugin system (auto-discovery + reset API)
+│   └── progress.py               # Progress bar (fixed rendering)
+├── tests/                        # Tests (70+ cases, 85% coverage)
+│   ├── test_plugin.py            # Plugin + auto-discovery tests
+│   ├── test_http_client.py       # HTTP client tests
+│   ├── test_data_source.py       # Data loading tests
+│   └── test_output.py            # Output management tests
 ├── output/                       # Decision output
 ├── docs/                         # Documentation
-├── .github/                      # GitHub automation
+├── .github/                      # GitHub Actions (CI + ruff lint)
 ├── Dockerfile                    # Docker
-├── .dockerignore
 ├── .env.example
-├── requirements.txt
+├── pyproject.toml
 └── run.sh
 ```
 
@@ -152,6 +155,7 @@ laya_decision_system/
 ```bash
 python src/main.py --classification
 python src/main.py --classification --data reviews.json
+python src/main.py --classification --data reviews.csv
 ```
 
 **Classification Dimensions**: Quality, Price, Service, Feature, Design
@@ -186,16 +190,19 @@ python src/main.py --intention --data messages.json
 python src/main.py --recommend
 ```
 
+Runs both product recommendation AND marketing strategy decision sequentially.
+
 **Recommendation Dimensions**: Premium Quality / Cost-effective / Trend / Personalized / Comprehensive
 
-**Marketing Dimensions**: Discount / Content Marketing / Social裂变 / Membership / Precision Push
+**Marketing Dimensions**: Discount / Content Marketing / Social / Loyalty / Personalized
 
-### 5. Risk Assessment (New)
+### 5. Risk Assessment
 
 **Scenario**: Credit, security, compliance risk
 
 ```bash
 python src/main.py --risk
+python src/main.py --risk --data risk_cases.json
 ```
 
 **Risk Dimensions**: High Risk / Medium Risk / Low Risk / Safe
@@ -208,6 +215,10 @@ python src/main.py --risk
 python src/main.py --batch
 python src/main.py --batch --data bulk.csv --format csv
 ```
+
+- Auto-chunks large batches (no recursion, safe for any size)
+- Real-time progress bar with ETA
+- Supports JSON and CSV output
 
 ---
 
@@ -246,11 +257,18 @@ Review 2
 Review 3
 ```
 
+**Stdin**:
+```bash
+cat data.json | python src/main.py --batch --data -
+```
+
 ---
 
 ## ⚙️ Configuration
 
 ### Environment Variables
+
+All variables use `LAYA_` prefix. Supports `.env` files via `pydantic-settings`.
 
 | Variable | Default | Description |
 |----------|--------|------|
@@ -259,7 +277,7 @@ Review 3
 | `LAYA_MODEL` | `multilingual` | Default model |
 | `LAYA_MAX_BATCH_SIZE` | `100` | Max batch chunk size |
 | `LAYA_MAX_CONCURRENT_REQUESTS` | `5` | Async concurrency |
-| `LAYA_RETRY_TIMES` | `3` | Retry times |
+| `LAYA_RETRY_TIMES` | `3` | Retry times (sync + async) |
 | `LAYA_RETRY_DELAY` | `1.0` | Initial retry delay (seconds) |
 | `LAYA_OUTPUT_DIR` | `./output` | Output directory |
 | `LAYA_LOG_LEVEL` | `INFO` | Log level |
@@ -273,8 +291,47 @@ Review 3
 # Run all tests
 pytest tests/ -v
 
-# With coverage
-pytest tests/ -v --cov=. --cov-report=term-missing
+# With coverage (fails under 80%)
+pytest tests/ -v --cov=. --cov-report=term-missing --cov-fail-under=80
+```
+
+### CI
+
+GitHub Actions runs tests on Python 3.10–3.12 and ruff lint checks on every push/PR.
+
+---
+
+## 🔧 Architecture Highlights
+
+### Plugin Auto-Discovery
+
+Add a new scenario by creating a module in `scenarios/` with a `run_*` function. The system auto-discovers and registers it — no manual mapping in `main.py` needed.
+
+```python
+# scenarios/anomaly_detection.py
+def run_anomaly_detection(data_source=None):
+    # Your logic here
+    pass
+```
+
+### Plugin Reset (Testing)
+
+```python
+from utils.plugin import reset
+reset()  # Clear all registered scenarios for clean test isolation
+```
+
+### Async Client (Connection Pooling + Retry)
+
+```python
+from utils.async_http_client import async_make_predict_request, async_close_client
+
+result = await async_make_predict_request(
+    "text input",
+    {"sentiment": {...}},
+    max_retries=3  # Override default retry count
+)
+await async_close_client()  # Cleanup on shutdown
 ```
 
 ---
