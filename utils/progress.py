@@ -76,13 +76,15 @@ class ProgressBar:
         else:
             eta_str = f"{eta:.1f}s"
 
-        # Build the full line
-        line = "{} {} |{}| {:5.1f}% {} ETA {}".format(
-            self.desc,
-            bar,
-            f"{pct * 100:.1f}%",
-            f"{rate:.1f}/s",
-            eta_str,
+        pct_str = f"{pct * 100:.1f}%"
+        rate_str = f"{rate:.1f}/s"
+
+        line = "{desc} {bar} |{pct}%| {rate} ETA {eta}".format(
+            desc=self.desc,
+            bar=bar,
+            pct=pct_str,
+            rate=rate_str,
+            eta=eta_str,
         )
 
         sys.stdout.write("\r" + line + " " * 20)

@@ -194,7 +194,7 @@ def _print_stats(results: list[dict], key: str = "strategy") -> None:
         print("\n  No results to display")
         return
 
-    print(f"\n📊 Strategy Distribution:")
+    print("\n📊 Strategy Distribution:")
     stats: dict[str, int] = {}
     for r in results:
         s = r.get(key, "unknown")

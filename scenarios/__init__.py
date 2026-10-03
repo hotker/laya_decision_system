@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from utils.plugin import (
     get_scenario,
-    list_scenarios,
     register,
     register_scenarios,
     reset,

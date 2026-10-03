@@ -25,14 +25,16 @@ import logging
 import sys
 import time
 
+# Local imports (modules)
+import scenarios  # noqa: F401
+
+# Third-party imports
+# Local imports
 from config.config import SYSTEM_NAME, VERSION, get_config
 from utils.data_source import load_data
 from utils.http_client import check_health
 from utils.output import clean_all, clean_old_files, list_output_files
 from utils.plugin import get_scenario, list_scenarios
-
-# Import all scenario modules to trigger auto-registration
-import scenarios  # noqa: F401
 
 
 def show_menu() -> None:

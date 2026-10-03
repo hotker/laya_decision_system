@@ -99,9 +99,6 @@ def register_scenarios() -> None:
                     short = short[: -len(suffix)]
                     break
 
-            # Skip internal functions like _default_xxx
-            scenario_name = short.replace("_", "-")
-
             # Only register if not already registered
             existing = get_scenario(short)
             if existing:
