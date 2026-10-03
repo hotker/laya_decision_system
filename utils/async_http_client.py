@@ -150,12 +150,13 @@ async def async_batch_concurrent(
     tasks = [_make_request(state) for state in states]
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    # Process results
+    # Process results with better error handling
     processed_results = []
     for i, result in enumerate(results):
         if isinstance(result, Exception):
             logger.error("async_batch_task_error index=%d error=%s", i, result)
-            processed_results.append({"error": str(result)})
+            # Preserve more context about the error
+            processed_results.append({"error": f"Task {i} failed: {result}", "index": i})
         else:
             processed_results.append(result)
 

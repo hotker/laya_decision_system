@@ -135,13 +135,24 @@ def save_results_csv(
             f.write("")
         return path
 
-    # Flatten data
+    # Flatten data with safe key access
     flat: list[dict] = []
     for item in results:
-        meta = item.get("metadata", {})
-        answers = item.get("answers", item.get("result", item))
+        # Safely extract metadata and answers
+        meta = item.get("metadata") or {}
+        if "answers" in item:
+            answers = item["answers"]
+        elif "result" in item:
+            answers = {"result": item["result"]}
+        else:
+            # Fallback: use the whole item as answers
+            answers = {"item": item}
         row = {**meta, **answers}
         flat.append(row)
+
+    if not flat:
+        logger.warning("save_csv_empty after flattening")
+        return path
 
     fields = list(flat[0].keys())
     try:

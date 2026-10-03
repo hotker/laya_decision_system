@@ -76,8 +76,19 @@ class ProgressBar:
         else:
             eta_str = f"{eta:.1f}s"
 
-        line = f"\r{self.desc} |{bar}| {pct*100:5.1f}% {rate:.1f}/s ETA {eta_str}  "
-        sys.stdout.write(line)
+        # Format progress line
+        pct_str = f"{pct*100:5.1f}%"
+        rate_str = f"{rate:.1f}/s"
+        eta_str = ""
+        if eta > 3600:
+            eta_str = f"{eta/3600:.1f}h"
+        elif eta > 60:
+            eta_str = f"{eta/60:.1f}m"
+        else:
+            eta_str = f"{eta:.1f}s"
+
+        line = "\r{} |{}| {} ETA {}  ".format(bar, pct_str, rate_str, eta_str)
+        sys.stdout.write(line.format(desc=self.desc, bar=line))
         sys.stdout.flush()
 
 

@@ -26,11 +26,12 @@ class DecisionRequest(BaseModel):
     @field_validator("state", mode="before")
     @classmethod
     def strip_state(cls, v: str) -> str:
+        """Strip whitespace and validate state length"""
         v = v.strip()
         if not v:
-            raise ValueError("state cannot be empty")
+            raise ValueError("state cannot be empty after stripping")
         if len(v) > 10000:
-            raise ValueError("state length exceeds 10000")
+            raise ValueError("state length exceeds 10000 characters")
         return v
 
     @field_validator("questions", mode="before")

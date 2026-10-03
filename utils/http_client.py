@@ -17,6 +17,7 @@ Usage:
 from __future__ import annotations
 
 import logging
+import threading
 from typing import Any, Optional
 
 import requests
@@ -52,13 +53,17 @@ def _build_session() -> requests.Session:
 
 # Global session (thread-safe, connection pool reuse)
 _session: requests.Session | None = None
+# Thread lock for session creation
+_session_lock = threading.Lock()
 
 
 def _get_session() -> requests.Session:
+    """Get or create session with thread-safe locking"""
     global _session
-    if _session is None:
-        _session = _build_session()
-    return _session
+    with _session_lock:
+        if _session is None:
+            _session = _build_session()
+        return _session
 
 
 # ─── Synchronous Requests ───────────────────────────────────────

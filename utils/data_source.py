@@ -106,14 +106,16 @@ def _normalize_data(data: Any, text_column: str) -> list[dict[str, Any]]:
 
 
 def _normalize_list(items: list, text_column: str) -> list[dict[str, Any]]:
-    """Extract body from list"""
+    """Extract body from list with safe key access"""
     results: list[dict] = []
     for item in items:
         if isinstance(item, str):
             results.append({"body": item})
         elif isinstance(item, dict):
-            body = item.get(text_column, item.get("body", item.get("text", "")))
+            # Safely extract body with fallback chain
+            body = item.get(text_column) or item.get("body") or item.get("text") or ""
             if body:
+                # Preserve extra fields from original item
                 extra = {k: v for k, v in item.items() if k not in (text_column, "body", "text")}
                 results.append({"body": body, **extra})
     return results
